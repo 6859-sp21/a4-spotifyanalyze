@@ -5,7 +5,13 @@
 <script src="https://d3js.org/d3.v4.js"></script>
 
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+
+<h1 class="pageTitle">Spotify Analyze</h1>
+  <div id="my_dataviz"></div>
+
+  <div id="chart" class="pageContainer">
+    <!-- Container for graph -->
+  </div>
 
 <script>
 
@@ -22,6 +28,13 @@
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+
+  const attributes = ['danceability', 'energy', 'speechiness','acousticness','instrumentalness', 'valence'];
+  const genres = ['pop','classical','country','metal','hiphop', 'jazz'];
+  const colors = ["red","orange","yellow","green","blue","purple"];
+
+  const selectedGenres = [genres[0], genres[1]]; // change the content
+  const selectedAttribute = attributes[3]; // change the content
   
   // get the data
   d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv", function(data) {
@@ -41,25 +54,21 @@
     svg.append("g")
         .call(d3.axisLeft(y));
   
+    
+
     // Compute kernel density estimation
     var kde = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))
-    var density1 =  kde( data
-        .filter( function(d){return d.genre === "pop"} )
-        .map(function(d){  return d.valence; }) )
-    var density2 =  kde( data
-        .filter( function(d){return d.genre === "classical"} )
-        .map(function(d){  return d.valence; }) )
-  
-    console.log(density1)
-    console.log(density2)
+    for (i=0; i<selectedGenres.length; i++){
+      var density1 =  kde( data
+        .filter( function(d){return d.genre === selectedGenres[i]} )
+        .map(function(d){  return d[selectedAttribute]; }) )
 
-    // Plot the area
-    svg.append("path")
+      svg.append("path")
         .attr("class", "mypath")
         .datum(density1)
-        .attr("fill", "#69b3a2")
+        .attr("fill", colors[i])
         .attr("opacity", ".6")
-        .attr("stroke", "#000")
+        .attr("stroke", colors[i])
         .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
         .attr("d",  d3.area()
@@ -68,31 +77,11 @@
             .y1(function(d) { return y(d[1]); })
             .y0(y(0))
         );
-  
-    // Plot the area
-    svg.append("path")
-        .attr("class", "mypath")
-        .datum(density2)
-        .attr("fill", "#404080")
-        .attr("opacity", ".6")
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .attr("stroke-linejoin", "round")
-        .attr("d",  d3.area()
-          .curve(d3.curveBasis)
-            .x(function(d) { return x(d[0]); })
-            .y1(function(d) { return y(d[1]); })
-            .y0(y(0))
-        );
-  
+    }  
+    const selectedGenre = selectedGenres[0]; // change the content
+    generateScatterPlot(data, selectedGenre, selectedAttribute)
   });
-  
-  // Handmade legend
-  svg.append("circle").attr("cx",300).attr("cy",30).attr("r", 6).style("fill", "#69b3a2")
-  svg.append("circle").attr("cx",300).attr("cy",60).attr("r", 6).style("fill", "#404080")
-  svg.append("text").attr("x", 320).attr("y", 30).text("pop").style("font-size", "15px").attr("alignment-baseline","middle")
-  svg.append("text").attr("x", 320).attr("y", 60).text("classical").style("font-size", "15px").attr("alignment-baseline","middle")
-  
+
   // Function to compute density
   function kernelDensityEstimator(kernel, X) {
     return function(V) {
@@ -105,6 +94,51 @@
     return function(v) {
       return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
     };
+  }
+
+  function generateScatterPlot(data, selectedGenre, selectedAttribute) {
+   
+    // Get a subset of the data based on the group
+    const filteredData = data.filter(function(d){
+      return d.genre === selectedGenre;
+    })
+
+    var margin = {top: 30, right: 30, bottom: 30, left: 50},
+      width = 430 ,
+      height = 150;
+
+    const svg = d3.create('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+    // scales setup
+    const xScale = d3.scaleLinear()
+    .domain([0, 1]) // questionable setup ?? 
+    .range([margin.left, width]);
+
+    const yScale = d3.scaleLinear()
+    .domain([0, 1])
+    .range([height - margin.bottom, margin.top]);
+
+    // drawing SVG
+    const symbol = d3.symbol();
+    svg.append('g')
+      .selectAll('circle') // d3-shape functions (like d3.symbol) generate attributes for SVG <path> elements
+      .data(data)
+      // .join('circle')
+      .attr('transform', d => `translate(${xScale(d[selectedAttribute])}, ${yScale(Math.random()*0.95+0.05)})`) // leave a bit space between plot and axis
+      .attr('d', d => symbol()) // output of the d3.symbol is wired up to the "d
+      .attr('fill-opacity','0.5')
+      .attr('fill', 'green')  // inpute color scale 
+      .attr('r','3');
+
+    //6. Drawing our x-axis
+    svg.append('g')
+      .attr('transform', `translate(0, ${height - margin.bottom})`)
+      .call(d3.axisBottom(xScale).ticks(10))
+
+    // setting up 
+    document.getElementById("chart").appendChild(svg.node());
   }
 
 </script>
