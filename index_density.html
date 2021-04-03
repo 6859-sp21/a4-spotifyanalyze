@@ -59,6 +59,8 @@
     // Compute kernel density estimation
     var kde = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))
     for (i=0; i<selectedGenres.length; i++){
+      const selectedGenre=selectedGenres[i];
+
       var density1 =  kde( data
         .filter( function(d){return d.genre === selectedGenres[i]} )
         .map(function(d){  return d[selectedAttribute]; }) )
@@ -75,11 +77,10 @@
           .curve(d3.curveBasis)
             .x(function(d) { return x(d[0]); })
             .y1(function(d) { return y(d[1]); })
-            .y0(y(0))
-        );
-    }  
-    const selectedGenre = selectedGenres[0]; // change the content
-    generateScatterPlot(data, selectedGenre, selectedAttribute)
+            .y0(y(0)))
+        .on("click", function(d) {generateScatterPlot(data, selectedGenre, selectedAttribute)});
+      }  
+    
   });
 
   // Function to compute density
@@ -102,6 +103,7 @@
     const filteredData = data.filter(function(d){
       return d.genre === selectedGenre;
     })
+    console.log(selectedGenre)
 
     var margin = {top: 30, right: 30, bottom: 30, left: 50},
       width = 430 ,
