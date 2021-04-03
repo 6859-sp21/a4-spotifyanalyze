@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+    <h1 class="pageTitle">Spotify Analyze</h1>
+
+    <div id="chart" class="pageContainer">
+      <!-- Container for graph -->
+    </div>
+
+    <script>
+      // Todo: how to do a deterministic run of the data
+
+      // Data
+      const data = d3.csv("data/genre.csv", d3.autoType)
+      .then(function(data){
+        generateScatterPlot(data)
+      });
+    
+
+      function generateScatterPlot(data) {
+        const attributes = ['danceability', 'energy', 'speechiness','acousticness','instrumentalness'];
+        const genres = ['pop','classical','country','mental','hiphop'];
+
+        const selectedGenre = genres[0]; // change the content
+        console.log(selectedGenre)
+        const selectedAttribute = attributes[3]; // change the content
+
+        // sanity check 
+        
+        // Get a subset of the data based on the group
+        const filteredData = data.filter(function(d){
+          return d.genre === selectedGenre;
+        })
+
+        // Svg base dimensions
+        const width = 800;
+        const height = 150;
+
+        const margin = ({top: 10, right: 10, bottom: 30, left: 10});
+        const svg = d3.create('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+        // scales setup
+        const xScale = d3.scaleLinear()
+        .domain([0, 1]) // questionable setup ?? 
+        .range([margin.left, width - margin.right]);
+
+        const yScale = d3.scaleLinear()
+        .domain([0, 1])
+        .range([height - margin.bottom, margin.top]);
+
+        // drawing SVG
+        const symbol = d3.symbol();
+        svg.append('g')
+          .selectAll('circle') // d3-shape functions (like d3.symbol) generate attributes for SVG <path> elements
+          .data(data)
+          .join('circle')
+          .attr('transform', d => `translate(${xScale(d[selectedAttribute])}, ${yScale(Math.random()*0.95+0.05)})`) // leave a bit space between plot and axis
+          .attr('d', d => symbol()) // output of the d3.symbol is wired up to the "d
+          .attr('fill-opacity','0.5')
+          .attr('fill', 'green')  // inpute color scale 
+          .attr('r','3');
+
+        //6. Drawing our x-axis
+        svg.append('g')
+          .attr('transform', `translate(0, ${height - margin.bottom})`)
+          .call(d3.axisBottom(xScale).ticks(5))
+
+        // setting up 
+        document.getElementById("chart").appendChild(svg.node());
+      }
+    </script>
+  </body>
+</html>
