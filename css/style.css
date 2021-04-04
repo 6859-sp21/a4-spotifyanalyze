@@ -6,3 +6,92 @@
 .pageTitle{
     text-align: center;
 }
+
+.tapStripContainer {
+    display: flex;
+}
+
+.selector{
+    width: auto;
+    min-width: 65px;
+    height: 20px;
+    text-align: center;
+    margin: 0 10px;
+    padding: 3 10px;
+    border-radius: 15px;
+    border-style: solid;
+    border-width: 2px;
+    cursor: pointer;
+
+    background: none;
+}
+
+.popSelected{
+ /* up to dynamic change  */
+ background: rgba(0, 0, 255, 0.3);
+ border-color: rgba(0, 0, 255, 0.5);
+ color: rgba(0, 0, 255, 1);
+}
+
+   
+.popUnselected{
+    border-color: rgba(0, 0, 255, 0.3);
+    color: rgba(0, 0, 255, 1);
+}
+
+.classicalSelected{
+    /* up to dynamic change  */
+    background: rgba(42, 42, 43, 0.3);
+    border-color: rgba(29, 29, 29, 0.5);
+    color: rgb(0, 0, 0);
+   }
+
+.classicalUnselected{
+    border-color: rgba(29, 29, 29, 0.3);
+    color: rgb(0, 0, 0);
+}
+
+.countrySelected{
+    /* up to dynamic change  */
+    background: rgba(0, 0, 255, 0.3);
+    border-color: rgba(0, 0, 255, 0.5);
+    color: rgba(0, 0, 255, 1);
+   }
+   
+.countryUnselected{
+    border-color: rgba(0, 0, 255, 0.3);
+    color: rgba(0, 0, 255, 1);
+}
+
+.metalSelected{
+/* up to dynamic change  */
+background: rgba(0, 0, 255, 0.3);
+border-color: rgba(0, 0, 255, 0.5);
+color: rgba(0, 0, 255, 1);
+}
+
+.metalUnselected{
+    border-color: rgba(0, 0, 255, 0.3);
+    color: rgba(0, 0, 255, 1);
+}
+
+.hiphopSelected{
+background: rgba(0, 0, 255, 0.3);
+border-color: rgba(0, 0, 255, 0.5);
+color: rgba(0, 0, 255, 1);
+}
+
+.hiphopUnselected{
+    border-color: rgba(0, 0, 255, 0.3);
+    color: rgba(0, 0, 255, 1);
+}
+.jazzSelected{
+background: rgba(0, 0, 255, 0.3);
+border-color: rgba(0, 0, 255, 0.5);
+color: rgba(0, 0, 255, 1);
+}
+
+.jazzUnselected{
+    border-color: rgba(0, 0, 255, 0.3);
+    color: rgba(0, 0, 255, 1);
+}
