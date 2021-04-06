@@ -1,24 +1,239 @@
-<html>
-  <head>
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
     <link rel="stylesheet" type="text/css" href="css/style.css">
   </head>
-  <body>
-    <h1 class="pageTitle">Spotify Analyze</h1>
-
-    <div id="chart" class="pageContainer">
-      <!-- Container for graph -->
+<h1 class="pageTitle">Spotify Analyze</h1>
+<div class="subTitle">
+  We collected 100 tracks for each music genre, and analyzed their different audio properties. <br>
+  Each audio property is rated from 0 to 1.
+</div>
+  
+<div class="contentContainer">
+  <div class="tapStripContainer">
+    <div class="selector popSelected" id="popSelector" onclick="tabClick('pop')">
+      Pop
     </div>
+    <div class="selector classicalSelected" id="classicalSelector" onclick="tabClick('classical')">
+      Classical
+    </div>
+    <div class="selector countryUnselected" id="countrySelector" onclick="tabClick('country')">
+      Country
+    </div>
+    <div class="selector metalUnselected" id="metalSelector" onclick="tabClick('metal')">
+      Metal
+    </div>
+    <div class="selector hiphopUnselected" id="hiphopSelector" onclick="tabClick('hiphop')">
+      HipHop
+    </div>
+    <div class="selector jazzUnselected" id="jazzSelector" onclick="tabClick('jazz')">
+      Jazz
+    </div>
+  </div>
+  <div class="graphsContainer">
+    <div class="mainViewContainer">
+      <div class="webChart"></div>
+    </div>
+    <div class="sidePanelContainer">
+      <div class="detailedViewTitle">
+        Detailed View
+      </div>
+      <div id="sideTitle" class="sideTitle"></div>
+      <div id="lineChart"></div>
 
-    <script>
-      // Data
-      const data = d3.csv("/data/genre.csv");
+      <div id="pipeChart" class="pipeChart">
+        <!-- Container for graph -->
+      </div>
+    </div>
+  </div>
+</div>
 
-      // insert svg
+<script>
+  const attributes = ['acousticness','danceability', 'energy', 'instrumentalness','speechiness', 'valence'];
+  const genres = ['classical','country','hiphop', 'jazz', 'metal', 'pop'];
 
-      // Should always be present to let svg give back our visualization
-      document.getElementById("chart").appendChild(svg.node());
-    </script>
-  </body>
-</html>
+  const colors = ["red","orange","yellow","green","blue","purple"];
+  const genreColorMap = new Map(); // a map keeping track if a genre is selected 
+  genreColorMap.set('pop', 'rgb(0, 0, 255)');
+  genreColorMap.set('classical', 'rgb(0, 0, 0)')
+  genreColorMap.set('country', 'rgb(192, 158, 96)');    
+  genreColorMap.set('metal', 'rgb(91, 91, 94)')
+  genreColorMap.set('hiphop', 'rgb(255, 72, 0)')
+  genreColorMap.set('jazz', 'rgb(245, 224, 32)')      
+
+  // const selectedGenres = [genres[0], genres[1], genres[3]]; // change the content
+  const selectedAttribute = attributes[2]; // change the content
+
+  // initializating map
+  const selectedMap = new Map(); // a map keeping track if a genre is selected 
+      selectedMap.set('pop', true);
+      selectedMap.set('classical', true)
+      selectedMap.set('country', false);    
+      selectedMap.set('metal', false)
+      selectedMap.set('hiphop', false)
+      selectedMap.set('jazz', false)      
+      
+  // GLOBAL variable? 
+  function tabClick(genreName) {
+    if (selectedMap.get(genreName)) { // it is already selected
+      document.getElementById(genreName+'Selector').classList.remove(genreName+'Selected')
+      document.getElementById(genreName+'Selector').classList.add(genreName+'Unselected')
+      selectedMap.set(genreName, false);
+    } else { // it is unselected
+      document.getElementById(genreName+'Selector').classList.remove(genreName+'Unselected')
+      document.getElementById(genreName+'Selector').classList.add(genreName+'Selected')
+      selectedMap.set(genreName, true);
+    }
+
+    getSelectedGenres();
+  }
+
+  let selectedGenres=[];
+
+  function getSelectedGenres() {
+    selectedGenres =[]
+    for (let k of selectedMap.keys()) {
+      if (selectedMap.get(k))
+      selectedGenres.push(k)
+      }
+    console.log(selectedGenres);
+    return selectedGenres;
+  }
+
+
+  
+  // get the data
+  d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
+    // insert Tabs
+    // insert place holder
+    for (const tab of document.getElementsByClassName("selector")){
+      console.log("Here is a selector")
+      tab.addEventListener("click",function(){
+        d3.select("svg.lineChart").remove();
+        d3.select("svg.pipe").remove();
+        if (getSelectedGenres().length === 0) {console.log("why here");return;}
+        generateLineChart(sourceData,selectedAttribute)
+      });
+    }
+    generateSideTitle(selectedAttribute);
+    generateLineChart(sourceData,selectedAttribute)
+    generateScatterPlot(sourceData, selectedGenres[0], selectedAttribute)
+  });
+
+  function generateSideTitle(selectedAttribute){
+    document.getElementById("sideTitle").innerHTML = selectedAttribute;
+  }
+
+  function generateLineChart(sourceData, selectedAttribute){ // genres, attribites
+    selectedGenres = getSelectedGenres();
+    d3.select("svg.pipe").remove();
+    generateScatterPlot(sourceData, selectedGenres[0], selectedAttribute)
+    // set the dimensions and margins of the graph
+    const margin = {top: 10, right: 10, bottom: 10, left: 10},
+        width = 500,
+        height = 400;
+
+    // append the svg object to the body of the page
+    const svg = d3.select("#lineChart")
+      .append("svg")
+      .attr("class", "lineChart")
+      .attr('width', width)
+      .attr('height', height)
+      .append("g")
+
+    // Scale and axis
+    const x = d3.scaleLinear()
+        .domain([0,1])
+        .range([margin.left, width-margin.right]);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).ticks(5));
+    var y = d3.scaleLinear()
+              .range([height-margin.bottom, margin.top])
+              .domain([0, 10]);
+  
+    // Compute kernel density estimation
+    var kde = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))
+    for (const selectedGenre of selectedGenres){
+      const density1 =  kde( sourceData
+        .filter(function(d){ return d.genre === selectedGenre} )
+        .map(function(d){ return d[selectedAttribute]; }) )
+
+      svg.append("path")
+        .datum(density1)
+        .attr("fill", "none")
+        .attr("stroke", genreColorMap.get(selectedGenre))
+        .attr("stroke-width", 3.5)
+        .attr("opacity", ".6")
+        .attr("d", d3.line()
+          .x(function(d) { return x(d[0]) })
+          .y(function(d) { return y(d[1]) })
+          .curve(d3.curveMonotoneX) 
+          )
+        .on("click", function(d) {generateScatterPlot(sourceData, selectedGenre, selectedAttribute)});
+      }  
+  }
+
+  // Function to compute density
+  function kernelDensityEstimator(kernel, X) {
+    return function(V) {
+      return X.map(function(x) {
+        return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+      });
+    };
+  }
+  function kernelEpanechnikov(k) {
+    return function(v) {
+      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+    };
+  }
+
+  function generateScatterPlot(sourceData, selectedGenre, selectedAttribute) {
+    d3.select("svg.pipe").remove();
+    // Get a subset of the data based on the group
+    const filteredData = sourceData.filter(function(d){
+      return d.genre === selectedGenre;
+    })
+    console.log(selectedGenre)
+
+    var margin = {top: 10, right: 10, bottom: 30, left: 10},
+      width = 500, // actual width and height
+      height = 100;
+
+    const svg = d3.create('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('class', "pipe");
+
+    // scales setup
+    const xScale = d3.scaleLinear()
+    .domain([0, 1]) // questionable setup ?? 
+    .range([margin.left, width-margin.right]);
+    const yScale = d3.scaleLinear()
+    .domain([0, 1])
+    .range([height - margin.bottom, margin.top]);
+
+    // drawing SVG
+    const symbol = d3.symbol();
+    svg.append('g')
+      .selectAll('circle') // d3-shape functions (like d3.symbol) generate attributes for SVG <path> elements
+      .data(filteredData)
+      .join('circle')
+      .attr('transform', d => `translate(${xScale(d[selectedAttribute])}, ${yScale(Math.random()*0.95+0.05)})`) // leave a bit space between plot and axis
+      .attr('d', d => symbol()) // output of the d3.symbol is wired up to the "d
+      .attr('fill-opacity','0.5')
+      .attr('fill', genreColorMap.get(selectedGenre))  // inpute color scale 
+      .attr('r','3');
+
+    //6. Drawing our x-axis
+    svg.append('g')
+      .attr('transform', `translate(0, ${height - margin.bottom})`)
+      .call(d3.axisBottom(xScale).ticks(10))
+
+    // setting up 
+    document.getElementById("pipeChart").appendChild(svg.node());
+  }
+
+</script>

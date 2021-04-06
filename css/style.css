@@ -1,28 +1,73 @@
-.pageContainer{
+.pageTitle{
+    text-align: center;
+    font-family: Bradley Hand;
+}
+
+.subTitle {
+    font-family: Bradley Hand;
+    font-size: 20px;
+    text-align: center;
+
+}
+
+.contentContainer{
+    font-family: Bradley Hand;
+    text-align: center;
+    margin: auto;
+    width: fit-content;
+}
+
+.graphsContainer{
+    display:flex;
+}
+
+.webChart{
+    width: 800px;
+    height: 800px;
+    background-color: coral;
+}
+
+.sidePanelContainer{
+    display:flex;
+    flex-direction: column;
+    margin-left: 30px;
+    justify-content: center;
+}
+
+.detailedViewTitle {
+    text-decoration: underline;
+    font-size: 25px;
+    margin-bottom: 30px;
+}
+
+.sideTitle{
+    text-transform:capitalize;
+    font-family: Bradley Hand;
+    font-size:20px;
+}
+
+.pipeChart{
     width:800;
     height:150px;
 }
 
-.pageTitle{
-    text-align: center;
-}
 
 .tapStripContainer {
     display: flex;
+    margin:30px;
 }
 
 .selector{
-    width: auto;
-    min-width: 65px;
+    min-width: 40px;
     height: 20px;
     text-align: center;
     margin: 0 10px;
-    padding: 3 10px;
+    padding: 3px 20px;
     border-radius: 15px;
     border-style: solid;
     border-width: 2px;
     cursor: pointer;
-
+    font-family:Arial, Helvetica, sans-serif;
     background: none;
 }
 
@@ -53,45 +98,45 @@
 
 .countrySelected{
     /* up to dynamic change  */
-    background: rgba(0, 0, 255, 0.3);
-    border-color: rgba(0, 0, 255, 0.5);
-    color: rgba(0, 0, 255, 1);
+    background: rgba(192, 158, 96, 0.3);
+    border-color: rgba(192, 158, 96,0.5);
+    color: rgba(192, 158, 96,1);
    }
    
 .countryUnselected{
-    border-color: rgba(0, 0, 255, 0.3);
-    color: rgba(0, 0, 255, 1);
+    border-color: rgba(192, 158, 96, 0.3);
+    color: rgba(192, 158, 96, 1);
 }
 
 .metalSelected{
 /* up to dynamic change  */
-background: rgba(0, 0, 255, 0.3);
-border-color: rgba(0, 0, 255, 0.5);
-color: rgba(0, 0, 255, 1);
+background: rgba(91, 91, 94, 0.3);
+border-color: rgba(91, 91, 94, 0.5);
+color: rgb(91, 91, 94);
 }
 
 .metalUnselected{
-    border-color: rgba(0, 0, 255, 0.3);
-    color: rgba(0, 0, 255, 1);
+    border-color: rgba(91, 91, 94, 0.3);
+    color: rgba(91, 91, 94, 1);
 }
 
 .hiphopSelected{
-background: rgba(0, 0, 255, 0.3);
-border-color: rgba(0, 0, 255, 0.5);
-color: rgba(0, 0, 255, 1);
+background: rgba(255, 72, 0, 0.3);
+border-color: rgba(255, 72, 0, 0.5);
+color: rgb(255, 72, 0);
 }
 
 .hiphopUnselected{
-    border-color: rgba(0, 0, 255, 0.3);
-    color: rgba(0, 0, 255, 1);
+    border-color: rgba(255, 72, 0, 0.3);
+    color: rgba(255, 72, 0, 1);
 }
 .jazzSelected{
-background: rgba(0, 0, 255, 0.3);
-border-color: rgba(0, 0, 255, 0.5);
-color: rgba(0, 0, 255, 1);
+background: rgba(245, 224, 32, 0.3);
+border-color: rgba(245, 224, 32, 0.5);
+color: rgb(245, 224, 32);
 }
 
 .jazzUnselected{
-    border-color: rgba(0, 0, 255, 0.3);
-    color: rgba(0, 0, 255, 1);
+    border-color: rgba(245, 224, 32, 0.3);
+    color: rgba(245, 224, 32, 1);
 }
