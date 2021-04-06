@@ -42,7 +42,6 @@
         return result;
       }
 
-
       d3.csv("data/genre-agg.csv", function(d) {
         return {
           danceability: +d.danceability,
@@ -262,6 +261,13 @@
                         .attr("class", "tooltip")
                         .style("opacity", 0)
 
+        function getFeatureOpacity(d) {
+          if (selectedFeaturesMap.get(d)) {
+            return 1.0
+          } else {
+            return 0.6
+          };
+        }
 
         // plot six axes 
         for (var i = 0; i < features.length; i++) {
@@ -285,6 +291,8 @@
           svg.append("text")
           .attr("x", label_coordinate.x-30)
           .attr("y", label_coordinate.y)
+          // .attr("opacity", d => getFeatureOpacity(d))
+          .attr("opacity", getFeatureOpacity(feature))
           .text(feature)
           .on("mouseover", function(event, d) {
             tooltip.transition()
