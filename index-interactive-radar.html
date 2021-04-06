@@ -13,6 +13,23 @@
     <script>
       // tutorial: https://yangdanny97.github.io/blog/2019/03/01/D3-Spider-Chart
 
+      const features = ["danceability", "energy", "speechiness", "acousticness", "instrumentalness", "valence"];
+
+      const attr_definitions = [
+          "<b>Danceability</b> describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.",
+          "<b>Energy</b> is a measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.",
+          "<b>Speechiness</b> detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.",
+          "<b>Acousticness</b> is a confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.",
+          "<b>Instrumentalness</b> predicts whether a track contains no vocals. 'Ooh' and 'aah' sounds are treated as instrumental in this context. Rap or spoken word tracks are clearly 'vocal'. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0.",
+          "<b>Valence</b> is a measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry)."
+      ]
+      
+      const featureDict = {};
+      features.forEach((key, i) => featureDict[key] = attr_definitions[i]);
+
+      const genres = ["classical","country","hiphop", "jazz","pop","metal"];
+
+
       d3.csv("data/genre-agg.csv", function(d) {
         return {
           danceability: +d.danceability,
@@ -26,25 +43,25 @@
       }).then(function(data) {
         console.log(data);
 
-        let genres = ["classical","country","hiphop", "jazz","pop","metal"];
         let colors = ["purple","yellow","orange","blue","red","green"]; // can select different hex codes
 
         let selectedGenres = ["hiphop", "jazz"]; // used for testing interactivity
-        generateRadars(data, selectedGenres);
-
-
-        //   let title = genres[i];
-        //   title = title[0].toUpperCase() + title.substring(1);
-        //   generateRadars(otherGenres, selectedGenre, title, colors[i]);
-        //   // generateSelectedRadar(selectedGenres, )
         
+        generateRadar(data, selectedGenres);
+        
+        for (i = 0; i < genres.length; i++) {
+          generateSelectedRadar(data, genres[i]);
+        }
       });
 
 
-      /*
-      Note: cleaning up the function for drawing all six radars (one for each highlighted genre), will commit promptly.
-       */
-      function generateRadars(data, selectedGenres) {
+      function getSelectedFeatures() {
+        const result = [];
+        // for ()
+      }
+
+
+      function generateSelectedRadar(data, selectedGenre) {
         // svg dimensions
         const width = 600;
         const height = 600;
@@ -53,9 +70,6 @@
         const svg = d3.create('svg')
           .attr('width', width)
           .attr('height', height);
-
-
-        let features = ["danceability", "energy", "speechiness", "acousticness", "instrumentalness", "valence"];
 
         // make radial scale for circles
         let radialScale = d3.scaleLinear()
@@ -111,13 +125,14 @@
           .text(ft_name);
         }
 
+        let title = selectedGenre[0].toUpperCase() + selectedGenre.substring(1);
         // add title
-        // svg.append("text")
-        //   .attr("x", 300)
-        //   .attr("y", 80)
-        //   .text(title)
-        //   .style("font-size","16px")
-        //   .style("text-anchor","middle");
+        svg.append("text")
+          .attr("x", 300)
+          .attr("y", 80)
+          .text(title)
+          .style("font-size","16px")
+          .style("text-anchor","middle");
         
         // plot data
         let line = d3.line()
@@ -141,7 +156,173 @@
           let d = data[i];
           let coordinates = getPathCoordinates(d);
           d.coordinates = coordinates;
-          console.log(d);
+        }
+
+        // create color scale for genres
+        let colorScale = d3.scaleOrdinal()
+            .domain(data.map(d => d.genre))
+            .range(d3.schemeTableau10);
+       
+        function getFillColor(d) {
+          if (d.genre !== selectedGenre) {
+            return "gray";
+          }
+          return colorScale(d.genre);
+        }
+
+        function getLineOpacity(d) {
+          if (d.genre !== selectedGenre) {
+            return 0.4;
+          }
+          return 1;
+        }
+
+        function getPolygonOpacity(d) {
+          if (d.genre !== selectedGenre) {
+            return 0.1;
+          }
+          return 0.4;
+        }
+
+        // draw shapes on radar for each genre
+        svg.selectAll("polygons")
+          .data(data)
+          .enter()
+          .append("path")
+            .attr("d", d => line(d.coordinates))
+            .attr("stroke-width", 3)
+            .attr("stroke", d => getFillColor(d))
+            .attr("fill", d => getFillColor(d))
+            .attr("stroke-opacity", d => getLineOpacity(d))
+            .attr("fill-opacity", d => getPolygonOpacity(d))
+
+        // insert svg
+        document.getElementById("chart").appendChild(svg.node());
+      }
+
+
+
+      // function for drawing single interactive web
+      function generateRadar(data, selectedGenres) {
+        // svg dimensions
+        const width = 800;
+        const height = 600;
+        const circleCenterX = 300;
+        const circleCenterY = 300;
+
+        const margin = ({top: 10, right: 10, bottom: 30, left: 10});
+        const svg = d3.create('svg')
+          .attr('width', width)
+          .attr('height', height);
+
+        // make radial scale for circles
+        let radialScale = d3.scaleLinear()
+            .domain([0,1])
+            .range([0,150]);
+
+        let ticks = [0.2,0.4,0.6,0.8,1.0];
+
+        // plot gridline circles and ticks
+        ticks.forEach(t =>
+          svg.append("circle")
+          .attr("cx", circleCenterX)
+          .attr("cy", circleCenterY)
+          .attr("fill", "none")
+          .attr("stroke", "gray")
+          .attr("r", radialScale(t))
+          .attr("stroke-opacity", 0.5)
+        );
+
+        ticks.forEach(t =>
+          svg.append("text")
+          .attr("x", 305)
+          .attr("y", circleCenterY - radialScale(t))
+          .text(t.toString())
+        );
+
+        function angleToCoordinate(angle, value){
+            let x = Math.cos(angle) * radialScale(value);
+            let y = Math.sin(angle) * radialScale(value);
+            return {"x": circleCenterX + x, "y": circleCenterY - y};
+        }
+
+
+        // create tooltip for feature definition
+        var tooltip = d3.select("body")
+                        .append("div")
+                        .attr("class", "tooltip")
+                        .style("opacity", 0)
+
+
+        // plot six axes 
+        for (var i = 0; i < features.length; i++) {
+          let feature = features[i];
+          let feature_def = featureDict[feature];
+          let angle = (Math.PI / 2) + (2 * Math.PI * i / features.length);
+          let line_coordinate = angleToCoordinate(angle, 1);
+          let label_coordinate = angleToCoordinate(angle, 1.3);
+          // let tooltip_coordinate = angleToCoordinate(angle, 1.3);
+
+          // draw each axis
+          svg.append("line")
+            .attr("x1", circleCenterX)
+            .attr("y1", circleCenterY)
+            .attr("x2", line_coordinate.x)
+            .attr("y2", line_coordinate.y)
+            .attr("stroke","black");
+
+
+          // label each axis
+          svg.append("text")
+          .attr("x", label_coordinate.x-30)
+          .attr("y", label_coordinate.y)
+          .text(feature)
+          .on("mouseover", function(event, d) {
+            tooltip.transition()
+              .duration(200)
+              .style("opacity", .9);
+            tooltip.html(feature_def)
+              .style("background", "lightgray")
+              .style("border-radius", "25px")
+              .style("padding", "10px")
+              .style("position","absolute")
+              .style("top", "350px")
+              .style("left", "600px")
+              .style("width", "200px")
+              // .style("top", tooltip_coordinate.y)
+              // .style("left", tooltip_coordinate.x-30);
+            console.log("y:",tooltip_coordinate.y, "x:",tooltip_coordinate.x-30)
+          })
+          .on("mouseout", function(event, d) {
+            tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+            });
+        }
+
+        // plot data
+        let line = d3.line()
+            .x(d => d.x)
+            .y(d => d.y);
+
+        // get coordinate for each data point on radar
+        function getPathCoordinates(data_point){
+          let coordinates = [];
+          for (var i = 0; i < features.length; i++){
+            let ft_name = features[i];
+            let angle = (Math.PI / 2) + (2 * Math.PI * i / features.length);
+            coordinates.push(angleToCoordinate(angle, data_point[ft_name]));
+          }
+          coordinates.push(coordinates[0]);
+          return coordinates;
+        }
+
+        // add coordinates to each data item
+        for (i = 0; i < data.length; i++) {
+          let d = data[i];
+          let coordinates = getPathCoordinates(d);
+          d.coordinates = coordinates;
+
           if (selectedGenres.indexOf(d.genre) < 0) {
             d.selected = false;
           } else {
@@ -182,7 +363,7 @@
           .data(data)
           .enter()
           .append("text")
-            .attr("x", 510)
+            .attr("x", 650)
             .attr("y", function(d,i){ return 100 + i*25})
             .attr("fill", d => getFillColor(d))
             .text(d => d.genre)
@@ -194,7 +375,7 @@
           .data(data)
           .enter()
           .append("circle")
-            .attr("cx", 500)
+            .attr("cx", 630)
             .attr("cy", function(d,i) {return 100 + i*25})
             .attr("r", 7)
             .attr("fill", d => getFillColor(d))
