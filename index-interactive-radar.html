@@ -29,6 +29,19 @@
 
       const genres = ["classical","country","hiphop", "jazz","pop","metal"];
 
+      const selectedFeaturesMap = new Map(); // track selected features for distribution/pipe viz
+      features.forEach((key, i) => selectedFeaturesMap.set(key, true))
+
+      function getSelectedFeatures() { // get which features were selected by clicking labels
+        const result = [];
+        selectedFeaturesMap.forEach(function(value, key) {
+          if (selectedFeaturesMap.get(key)) {
+            result.push(key);
+          }
+        });
+        return result;
+      }
+
 
       d3.csv("data/genre-agg.csv", function(d) {
         return {
@@ -55,10 +68,6 @@
       });
 
 
-      function getSelectedFeatures() {
-        const result = [];
-        // for ()
-      }
 
 
       function generateSelectedRadar(data, selectedGenre) {
@@ -291,13 +300,25 @@
               .style("width", "200px")
               // .style("top", tooltip_coordinate.y)
               // .style("left", tooltip_coordinate.x-30);
-            console.log("y:",tooltip_coordinate.y, "x:",tooltip_coordinate.x-30)
+            // console.log("y:",tooltip_coordinate.y, "x:",tooltip_coordinate.x-30)
           })
           .on("mouseout", function(event, d) {
             tooltip.transition()
                .duration(500)
                .style("opacity", 0);
-            });
+          })
+          .on("click", function(event, d) {
+            if (selectedFeaturesMap.get(feature)) {
+              selectedFeaturesMap.set(feature, false) // in selection; remove
+              d3.select(this)
+                  .attr("opacity",0.7)
+            } else {
+              selectedFeaturesMap.set(feature, true) // add to selection
+              d3.select(this)
+                  .attr("opacity",1.0)
+            };
+            console.log(selectedFeaturesMap.get(feature), getSelectedFeatures());
+          })
         }
 
         // plot data
