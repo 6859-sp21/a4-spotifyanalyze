@@ -325,7 +325,7 @@
     // make radial scale for circles
     let radialScale = d3.scaleLinear()
         .domain([0,1])
-        .range([0,150]);
+        .range([0,250]);
 
     let ticks = [0.2,0.4,0.6,0.8,1.0];
 
@@ -342,8 +342,8 @@
 
     ticks.forEach(t =>
       svg.append("text")
-      .attr("x", 305)
-      .attr("y", circleCenterY - radialScale(t))
+      .attr("x", circleCenterX+5)
+      .attr("y", circleCenterY - radialScale(t)-2)
       .text(t.toString())
       .style("font-family","Arial")
       .style("font-size","12px")
@@ -372,16 +372,12 @@
       return "1";
     }
 
-
-
-    let label_coordinates = [];
     // plot six axes (one for each attribute)
     for (var i = 0; i < attributes.length; i++) {
       let attribute = attributes[i];
       let angle = (Math.PI / 2) + (2 * Math.PI * i / attributes.length);
       let line_coordinate = angleToCoordinate(angle, 1);
-      let label_coordinate = angleToCoordinate(angle, 1.3);
-      label_coordinates.push(label_coordinate);
+      let label_coordinate = angleToCoordinate(angle, 1.1);
 
       // draw each axis
       svg.append("line")
@@ -399,10 +395,11 @@
         .datum(attribute)
         .attr("class", "axisLabel")
         .attr("class", d => d+"Label")
-        .attr("x", label_coordinate.x-30)
+        .attr("x", label_coordinate.x-40)
         .attr("y", label_coordinate.y)
         .attr("fill", d => getAttributeColor(d))
         .text(d => d)
+        .attr("font-size","large")
         .on("mouseover", function(event, d) {
           tooltip.transition()
             .duration(200)
