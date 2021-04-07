@@ -35,7 +35,9 @@
   <div class="graphsContainer">
     <div class="mainViewContainer">
       <div class="mainViewTitle">Genre Audio Features</div>
-      <div id="interactiveWebChart" class="webChart"></div>
+      <div class="webChart">
+        <div id="interactiveWebChart"></div>
+      </div>
     </div>
     <div class="sidePanelContainer">
       <div class="detailedViewTitle">
@@ -355,12 +357,17 @@
         return {"x": circleCenterX + x, "y": circleCenterY - y};
     }
 
-
     // create tooltip for feature definition
-    var tooltip = d3.select("body")
+    const tooltip = d3.select("div.webChart")
                     .append("div")
                     .attr("class", "tooltip")
                     .style("opacity", 0)
+                    .style("background", "lightgray")
+                    .style("border-radius", "25px")
+                    .style("padding", "10px")
+                    .style("position","absolute")
+                    .style("bottom", "10px")
+                    .style("width", "350px")
 
     function getAttributeColor(d) {
       if (selectedAttribute === d) { return "blue";}
@@ -405,13 +412,6 @@
             .duration(200)
             .style("opacity", .9);
           tooltip.html(attributeDict[d])
-            .style("background", "lightgray")
-            .style("border-radius", "25px")
-            .style("padding", "10px")
-            .style("position","absolute")
-            .style("top", "350px")
-            .style("left", "600px")
-            .style("width", "200px")
         })
         .on("mouseout", function(event, d) {
           tooltip.transition()
@@ -430,6 +430,7 @@
           d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
             d3.select("svg.lineChart").remove();
             d3.select("svg.pipe").remove();
+            displayedGenreInPipe=""
             generateSideTitle(selectedAttribute);
             generateLineChart(sourceData,selectedAttribute);
             generateScatterPlot(sourceData, selectedGenres[0], selectedAttribute);
