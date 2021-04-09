@@ -49,6 +49,9 @@
       <div id="pipeChart" class="pipeChart">
         <!-- Container for graph -->
       </div>
+      <div id="audioPlayer" class="spotify-embed-block">
+        <!-- <iframe src="https://open.spotify.com/embed/playlist/5EyFMotmvSfDAZ4hSdKrbx" width="540" height="300" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe> -->
+      </div>
     </div>
   </div>
 </div>
@@ -71,6 +74,14 @@
   selectedMap.set('metal', false)
   selectedMap.set('hiphop', false)
   selectedMap.set('jazz', false)      
+
+  const genrePlaylistMap = new Map(); // a map keeping track if a genre is selected 
+  genrePlaylistMap.set('pop', 'https://open.spotify.com/embed/playlist/6gS3HhOiI17QNojjPuPzqc');
+  genrePlaylistMap.set('classical', 'https://open.spotify.com/embed/playlist/3HYK6ri0GkvRcM6GkKh0hJ')
+  genrePlaylistMap.set('country', 'https://open.spotify.com/embed/playlist/4mijVkpSXJziPiOrK7YX4M');    
+  genrePlaylistMap.set('metal', 'https://open.spotify.com/embed/playlist/3pBfUFu8MkyiCYyZe849Ks')
+  genrePlaylistMap.set('hiphop', 'https://open.spotify.com/embed/playlist/6MXkE0uYF4XwU4VTtyrpfP')
+  genrePlaylistMap.set('jazz', 'https://open.spotify.com/embed/playlist/5EyFMotmvSfDAZ4hSdKrbx') 
 
   const attributes = ['acousticness','danceability', 'energy', 'instrumentalness','speechiness', 'valence'];
   const attr_definitions = [
@@ -119,10 +130,12 @@
         d3.select("svg.lineChart").remove();
         if (getSelectedGenres().length === 0) {
           d3.select("svg.pipe").remove();
+          d3.select("iframe").remove();
           return;
         }
         if (displayedGenreInPipe != getSelectedGenres()[0]){
           d3.select("svg.pipe").remove();
+          d3.select("iframe").remove();
         }
         generateLineChart(sourceData,selectedAttribute)
       });
@@ -231,8 +244,23 @@
     };
   }
 
+  function generateAudioPlayer(selectedGenre) {
+    if (displayedGenreInPipe == selectedGenre){return;}
+    d3.select("iframe").remove();
+    var ifrm = document.createElement("iframe");
+        ifrm.setAttribute("src", genrePlaylistMap.get(selectedGenre));
+        ifrm.setAttribute("width", "540");
+        ifrm.setAttribute("height", "300");
+        ifrm.setAttribute("frameborder", "0");
+        ifrm.setAttribute("allowtransparency", "true");
+        ifrm.setAttribute("allow", "encrypted-media");
+    // setting up 
+    document.getElementById("audioPlayer").appendChild(ifrm);
+  }
+
   function generateScatterPlot(sourceData, selectedGenre, selectedAttribute) {
     if (displayedGenreInPipe == selectedGenre){return;}
+    generateAudioPlayer(selectedGenre)
     d3.select("svg.pipe").remove();
     // Get a subset of the data based on the group
     const filteredData = sourceData.filter(function(d){
@@ -431,6 +459,7 @@
           d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
             d3.select("svg.lineChart").remove();
             d3.select("svg.pipe").remove();
+            d3.select("iframe").remove();
             displayedGenreInPipe=""
             generateSideTitle(selectedAttribute);
             generateLineChart(sourceData,selectedAttribute);
