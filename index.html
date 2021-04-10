@@ -73,14 +73,6 @@
   selectedMap.set('hiphop', false)
   selectedMap.set('jazz', false)      
 
-  const genrePlaylistMap = new Map(); // a map keeping track if a genre is selected 
-  genrePlaylistMap.set('pop', 'https://open.spotify.com/embed/playlist/6gS3HhOiI17QNojjPuPzqc');
-  genrePlaylistMap.set('classical', 'https://open.spotify.com/embed/playlist/3HYK6ri0GkvRcM6GkKh0hJ')
-  genrePlaylistMap.set('country', 'https://open.spotify.com/embed/playlist/4mijVkpSXJziPiOrK7YX4M');    
-  genrePlaylistMap.set('metal', 'https://open.spotify.com/embed/playlist/3pBfUFu8MkyiCYyZe849Ks')
-  genrePlaylistMap.set('hiphop', 'https://open.spotify.com/embed/playlist/6MXkE0uYF4XwU4VTtyrpfP')
-  genrePlaylistMap.set('jazz', 'https://open.spotify.com/embed/playlist/5EyFMotmvSfDAZ4hSdKrbx') 
-
   const attributes = ['acousticness','danceability', 'energy', 'instrumentalness','speechiness', 'valence'];
   const attr_definitions = [
       "<b>Acousticness</b> is a confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.",
@@ -121,7 +113,7 @@
   }
 
   // get the data
-  d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
+  d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv").then(function(sourceData) {
     for (const tab of document.getElementsByClassName("selector")){
       console.log("Here is a selector")
       tab.addEventListener("click",function(){
@@ -242,11 +234,11 @@
     };
   }
 
-  function generateAudioPlayer(selectedGenre) {
-    if (displayedGenreInPipe == selectedGenre){return;}
+  function generateAudioPlayer(url) {
+    console.log(url)
     d3.select("iframe").remove();
     var ifrm = document.createElement("iframe");
-        ifrm.setAttribute("src", genrePlaylistMap.get(selectedGenre));
+        ifrm.setAttribute("src", "https://open.spotify.com/embed/track/"+url);
         ifrm.setAttribute("width", "540");
         ifrm.setAttribute("height", "300");
         ifrm.setAttribute("frameborder", "0");
@@ -258,7 +250,6 @@
 
   function generateScatterPlot(sourceData, selectedGenre, selectedAttribute) {
     if (displayedGenreInPipe == selectedGenre){return;}
-    generateAudioPlayer(selectedGenre)
     d3.select("svg.pipe").remove();
     // Get a subset of the data based on the group
     const filteredData = sourceData.filter(function(d){
@@ -293,7 +284,10 @@
       .attr('d', d => symbol()) // output of the d3.symbol is wired up to the "d
       .attr('fill-opacity','0.7')
       .attr('fill', genreColorMap.get(selectedGenre))  // inpute color scale 
-      .attr('r','3');
+      .attr('r','3')
+      .on("click", function(event, d) {
+            generateAudioPlayer(d.id);
+          });
 
     // add in label 
     svg.append('g').append("text")
@@ -454,7 +448,7 @@
           d3.select("text."+d+"Label").attr("fill","blue");
           d3.select("line."+d+"AxisLine").attr("stroke-width","3");
 
-          d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
+          d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv").then(function(sourceData) {
             d3.select("svg.lineChart").remove();
             d3.select("svg.pipe").remove();
             d3.select("iframe").remove();
