@@ -9,8 +9,6 @@
     text-align: center;
 }
 
-.tooltip {z-index: -20;}
-
 .contentContainer{
     font-family: Bradley Hand;
     text-align: center;
@@ -19,13 +17,13 @@
 }
 
 .graphsContainer{
-    display:flex;
+    display: flex;
 }
 
 .webChart{
     position:relative;
     width: 800px;
-    height: 800px;
+    height: 830px;
     font-family:Arial, Helvetica, sans-serif;
 }
 
