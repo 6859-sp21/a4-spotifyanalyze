@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
-    <!-- Load d3.js -->
-    <script src="https://d3js.org/d3.v6.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
-  </head>
+  <!-- Load d3.js -->
+  <script src="https://d3js.org/d3.v6.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<div class="pageContainer" onclick="clickOnBackground">
 <h1 class="pageTitle">Spotify Analyze</h1>
 <div class="subTitle">
   We collected 100 tracks for each music genre, and analyzed their different audio properties. <br>
@@ -53,6 +55,7 @@
     </div>
   </div>
 </div>
+</div>
 
 <script>
 
@@ -90,12 +93,14 @@
       "<b>Speechiness</b> detects the presence of spoken words in a track.<br>The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.<br>Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.",
       "<b>Valence</b> is a measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry)."
   ]
-
   const attributeDict = {};
   attributes.forEach((key, i) => attributeDict[key] = attr_definitions[i]);
 
+  // ================================ GLOBAL VARIABLE REGION ============================
+  // The definition here is the default values.
   let selectedAttribute = attributes[2]; // change the content
-  displayedGenreInPipe = getSelectedGenres().length == 0 ? "" : getSelectedGenres[0]
+  displayedGenreInPipe = ""
+  // ========================================================================================
 
   function tabClick(genreName) {
     if (selectedMap.get(genreName)) { // it is already selected
@@ -110,6 +115,10 @@
     getSelectedGenres();
   }
 
+  function clickOnBackground(){
+    console.log("Click on background")
+  }
+
   function getSelectedGenres() {
     selectedGenres =[]
     for (let k of selectedMap.keys()) {
@@ -120,19 +129,32 @@
     return selectedGenres;
   }
 
+  function removePipeChart(){
+    d3.select("svg.pipe").remove();
+    displayedGenreInPipe = ""
+  }
+
+  function removeLineChart(){
+    d3.select("svg.lineChart").remove();
+    removePipeChart();
+  }
+
+  d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+
+  
   // get the data
   d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
     for (const tab of document.getElementsByClassName("selector")){
-      console.log("Here is a selector")
       tab.addEventListener("click",function(){
-        d3.select("svg.lineChart").remove();
         if (getSelectedGenres().length === 0) {
-          d3.select("svg.pipe").remove();
           d3.select("iframe").remove();
           return;
         }
         if (displayedGenreInPipe != getSelectedGenres()[0]){
-          d3.select("svg.pipe").remove();
           d3.select("iframe").remove();
         }
         generateLineChart(sourceData,selectedAttribute)
@@ -140,7 +162,6 @@
     }
     generateSideTitle(selectedAttribute);
     generateLineChart(sourceData,selectedAttribute)
-    generateScatterPlot(sourceData, selectedGenres[0], selectedAttribute)
   });
 
   function generateSideTitle(selectedAttribute){
@@ -148,8 +169,8 @@
   }
 
   function generateLineChart(sourceData, selectedAttribute){ // genres, attribites
+    removeLineChart();
     selectedGenres = getSelectedGenres();
-    generateScatterPlot(sourceData, selectedGenres[0], selectedAttribute)
     // set the dimensions and margins of the graph
     const margin = {top: 10, right: 10, bottom: 10, left: 50},
         width = 550,
@@ -201,29 +222,35 @@
           .curve(d3.curveMonotoneX) 
         );
 
-        // Draw fake lines to increase clickable area
-        svg.append("path")
-        .datum(density1)
-        .attr("fill", "none")
-        .attr('class', 'individualLine')
-        .attr("stroke", "red")
-        .attr("stroke-width", 20)
-        .attr("opacity", ".0")
-        .attr("d", d3.line()
-          .x(function(d) { return x(d[0]) })
-          .y(function(d) { return y(d[1]) })
-          .curve(d3.curveMonotoneX) 
-          )
-        .on("click", function(d) {
-          if (displayedGenreInPipe != selectedGenre){
-            d3.select("path."+displayedGenreInPipe +'Line').attr("stroke-width", 3.5)
-              .attr("opacity", ".8");
-            d3.select("path."+selectedGenre+'Line').attr("stroke-width", 4.5)
-              .attr("opacity", "1");
-            generateScatterPlot(sourceData, selectedGenre, selectedAttribute)
-          }
-        });
+      // Draw fake lines to increase clickable area
+      svg.append("path")
+      .datum(density1)
+      .attr("fill", "none")
+      .attr('class', 'individualTouchLine')
+      .attr("stroke", "red")
+      .attr("stroke-width", 20)
+      .attr("opacity", ".0")
+      .attr("d", d3.line()
+        .x(function(d) { return x(d[0]) })
+        .y(function(d) { return y(d[1]) })
+        .curve(d3.curveMonotoneX) 
+        )
+      .on("click", function(d) {
+        if (displayedGenreInPipe != selectedGenre){
+          d3.select("path."+displayedGenreInPipe +'Line').attr("stroke-width", 3.5)
+            .attr("opacity", ".7");
+          d3.select("path."+selectedGenre+'Line').attr("stroke-width", 4.5)
+            .attr("opacity", "1");
+          generateScatterPlot(sourceData, selectedGenre, selectedAttribute)
+          d3.select("path."+selectedGenre+'Line').moveToFront();
+          d3.select(this).moveToFront();
+
+          console.log("Line on click detected!");
+        }
+      });
     }
+
+
     d3.select("path."+displayedGenreInPipe+'Line').attr("stroke-width", 4.5)
               .attr("opacity", "1");
   }
@@ -257,9 +284,8 @@
   }
 
   function generateScatterPlot(sourceData, selectedGenre, selectedAttribute) {
-    if (displayedGenreInPipe == selectedGenre){return;}
+    removePipeChart();
     generateAudioPlayer(selectedGenre)
-    d3.select("svg.pipe").remove();
     // Get a subset of the data based on the group
     const filteredData = sourceData.filter(function(d){
       return d.genre === selectedGenre;
@@ -302,7 +328,6 @@
     .attr('y', 10)
     .attr('fill', genreColorMap.get(selectedGenre))
 
-
     //6. Drawing our x-axis
     svg.append('g')
       .attr('transform', `translate(0, ${height - margin.bottom})`)
@@ -317,15 +342,17 @@
     .attr('y', height-10)
      
     displayedGenreInPipe = selectedGenre;
-    // setting up 
     document.getElementById("pipeChart").appendChild(svg.node());
   }
 
-
+  function highlightLineChartDoScatterPlotUpdate(displayedGenreInPipe){
+    d3.select("path."+displayedGenreInPipe+'Line').attr("stroke-width", 4.5)
+            .attr("opacity", "1");
+    SCALL
+  }
   // draw radars
   d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre-agg.csv").then(function(genreAggData) {
     for (const tab of document.getElementsByClassName("selector")){
-      console.log("Here is another selector")
       tab.addEventListener("click",function(){
         d3.select("svg.interactiveRadar").remove();
         if (getSelectedGenres().length === 0) {console.log("why here");return;}
@@ -455,17 +482,13 @@
           d3.select("line."+d+"AxisLine").attr("stroke-width","3");
 
           d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
-            d3.select("svg.lineChart").remove();
-            d3.select("svg.pipe").remove();
+            removeLineChart();
             d3.select("iframe").remove();
-            displayedGenreInPipe=""
             generateSideTitle(selectedAttribute);
             generateLineChart(sourceData,selectedAttribute);
-            generateScatterPlot(sourceData, selectedGenres[0], selectedAttribute);
           })
         })
     }
-
 
     // plot data
     let line = d3.line()
@@ -497,38 +520,33 @@
       }
     }
 
-    function getFillColor(d) {
-      if (!d.selected) {
-        return "gray";
-      }
-      return genreColorMap.get(d.genre);
+    function filterSelectedGenres(data){
+      return data.filter(d => getSelectedGenres().includes(d.genre))
     }
 
-    function getLineOpacity(d) {
-      if (!d.selected) {
-        return 0;
-      }
-      return 1;
-    }
-
-    function getPolygonOpacity(d) {
-      if (!d.selected) {
-        return 0;
-      }
-      return 0.4;
-    }
-
-    // draw shapes on radar for each genre
-    svg.selectAll("polygons")
-      .data(data)
+    // draw shapes on radar for each genre 
+    svg.append("g").selectAll("polygons")
+      .data(filterSelectedGenres(data))
       .enter()
       .append("path")
         .attr("d", d => line(d.coordinates))
+        .attr("class", d=> d.genre+"Polygon")
         .attr("stroke-width", 3)
-        .attr("stroke", d => getFillColor(d))
-        .attr("fill", d => getFillColor(d))
-        .attr("stroke-opacity", d => getLineOpacity(d))
-        .attr("fill-opacity", d => getPolygonOpacity(d))
+        .attr("stroke", d => genreColorMap.get(d.genre))
+        .attr("fill", d => genreColorMap.get(d.genre))
+        .attr("stroke-opacity", 1)
+        .attr("fill-opacity", 0.4)
+        .on("click", function(event,d) {
+          console.log("Detected click! "+d.genre);
+          d3.select(this).moveToFront();
+          d3.select(this).attr('fill-opacity', 0.7)
+          d3.select("path."+displayedGenreInPipe+"Polygon").attr('fill-opacity', 0.4)
+          d3.select("path."+d.genre+"Polygon").moveToFront();
+          displayedGenreInPipe = d.genre;
+          // manually update highlight on line chart
+          d3.select("path."+displayedGenreInPipe+'Line').attr("stroke-width", 4.5)
+            .attr("opacity", "1");
+        });
 
     // insert svg
     document.getElementById("interactiveWebChart").appendChild(svg.node());
