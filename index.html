@@ -90,8 +90,8 @@
 
   // ================================ GLOBAL VARIABLE REGION ============================
   // The definition here is the default values.
-  let selectedAttribute = attributes[2]; // change the content
-  displayedGenreInPipe = ""
+  let SELECTED_ATTRIBUTE = attributes[2]; // change the content
+  let DISPLAYED_GENRE_IN_PIPE = ""
   // ========================================================================================
 
   function tabClick(genreName) {
@@ -123,7 +123,7 @@
 
   function removePipeChart(){
     d3.select("svg.pipe").remove();
-    displayedGenreInPipe = ""
+    DISPLAYED_GENRE_IN_PIPE = ""
   }
 
   function removeLineChart(){
@@ -139,21 +139,35 @@
 
   
   // get the data
-  d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv").then(function(sourceData) {
-    for (const tab of document.getElementsByClassName("selector")){
+  const genre_id_promise = d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv");
+  const genre_agg_promise = d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre-agg.csv");
+
+  Promise.all([genre_id_promise,genre_agg_promise]).then((values) => {
+    const genre_id_data = values[0],
+      genre_agg_data= values[1];
+    
+      for (const tab of document.getElementsByClassName("selector")){
       tab.addEventListener("click",function(){
         if (getSelectedGenres().length === 0) {
           d3.select("iframe").remove();
           return;
         }
-        if (displayedGenreInPipe != getSelectedGenres()[0]){
+        if (DISPLAYED_GENRE_IN_PIPE != getSelectedGenres()[0]){
           d3.select("iframe").remove();
         }
-        generateLineChart(sourceData,selectedAttribute)
+        generateLineChart(genre_id_data, SELECTED_ATTRIBUTE)
       });
     }
-    generateSideTitle(selectedAttribute);
-    generateLineChart(sourceData,selectedAttribute)
+    generateSideTitle(SELECTED_ATTRIBUTE);
+    generateLineChart(genre_id_data, SELECTED_ATTRIBUTE);
+
+    for (const tab of document.getElementsByClassName("selector")){
+      tab.addEventListener("click",function(){
+        d3.select("svg.interactiveRadar").remove();
+        generateRadar(genre_agg_data, selectedGenres, genre_id_data);
+      });
+    }
+    generateRadar(genre_agg_data, getSelectedGenres(), genre_id_data)
   });
 
   function generateSideTitle(selectedAttribute){
@@ -161,6 +175,19 @@
   }
 
   function generateLineChart(sourceData, selectedAttribute){ // genres, attribites
+    function kernelDensityEstimator(kernel, X) {
+      return function(V) {
+        return X.map(function(x) {
+          return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+        });
+      };
+    }
+    function kernelEpanechnikov(k) {
+      return function(v) {
+        return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+      };
+    }
+
     removeLineChart();
     selectedGenres = getSelectedGenres();
     // set the dimensions and margins of the graph
@@ -228,8 +255,8 @@
         .curve(d3.curveMonotoneX) 
         )
       .on("click", function(d) {
-        if (displayedGenreInPipe != selectedGenre){
-          d3.select("path."+displayedGenreInPipe +'Line').attr("stroke-width", 3.5)
+        if (DISPLAYED_GENRE_IN_PIPE != selectedGenre){
+          d3.select("path."+DISPLAYED_GENRE_IN_PIPE +'Line').attr("stroke-width", 3.5)
             .attr("opacity", ".7");
           d3.select("path."+selectedGenre+'Line').attr("stroke-width", 4.5)
             .attr("opacity", "1");
@@ -242,23 +269,8 @@
       });
     }
 
-
-    d3.select("path."+displayedGenreInPipe+'Line').attr("stroke-width", 4.5)
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE+'Line').attr("stroke-width", 4.5)
               .attr("opacity", "1");
-  }
-
-  // Function to compute density
-  function kernelDensityEstimator(kernel, X) {
-    return function(V) {
-      return X.map(function(x) {
-        return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-      });
-    };
-  }
-  function kernelEpanechnikov(k) {
-    return function(v) {
-      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-    };
   }
 
   function generateAudioPlayer(url) {
@@ -336,30 +348,12 @@
     .attr('x', '50%')
     .attr('y', height-10)
      
-    displayedGenreInPipe = selectedGenre;
+    DISPLAYED_GENRE_IN_PIPE = selectedGenre;
     document.getElementById("pipeChart").appendChild(svg.node());
   }
 
-  function highlightLineChartDoScatterPlotUpdate(displayedGenreInPipe){
-    d3.select("path."+displayedGenreInPipe+'Line').attr("stroke-width", 4.5)
-            .attr("opacity", "1");
-    SCALL
-  }
-  // draw radars
-  d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre-agg.csv").then(function(genreAggData) {
-    for (const tab of document.getElementsByClassName("selector")){
-      tab.addEventListener("click",function(){
-        d3.select("svg.interactiveRadar").remove();
-        if (getSelectedGenres().length === 0) {console.log("why here");return;}
-        generateRadar(genreAggData, selectedGenres);
-      });
-    }
-    generateRadar(genreAggData, getSelectedGenres())
-  });
-
-
   // function for drawing single interactive web
-  function generateRadar(data, selectedGenres) {
+  function generateRadar(data, selectedGenres, genre_id_data) {
     // svg dimensions
     const width = 800;
     const height = 800;
@@ -418,12 +412,12 @@
                     .style("width", "350px")
 
     function getAttributeColor(d) {
-      if (selectedAttribute === d) { return "blue";}
+      if (SELECTED_ATTRIBUTE === d) { return "blue";}
       return "black";
     }
 
     function getAxisLineWidth(d) {
-      if (selectedAttribute === d) {return "3";}
+      if (SELECTED_ATTRIBUTE === d) {return "3";}
       return "1";
     }
 
@@ -468,7 +462,7 @@
             .style("opacity", 0);
         })
         .on("click", function(event, d) {
-          selectedAttribute = d;
+          SELECTED_ATTRIBUTE = d;
           for (const feature of attributes) {
             d3.select("text."+feature+"Label").attr("fill","black");
             d3.select("line."+feature+"AxisLine").attr("stroke-width","1");
@@ -479,8 +473,8 @@
           d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
             removeLineChart();
             d3.select("iframe").remove();
-            generateSideTitle(selectedAttribute);
-            generateLineChart(sourceData,selectedAttribute);
+            generateSideTitle(SELECTED_ATTRIBUTE);
+            generateLineChart(sourceData,SELECTED_ATTRIBUTE);
           })
         })
     }
@@ -535,16 +529,32 @@
           console.log("Detected click! "+d.genre);
           d3.select(this).moveToFront();
           d3.select(this).attr('fill-opacity', 0.7)
-          d3.select("path."+displayedGenreInPipe+"Polygon").attr('fill-opacity', 0.4)
+          d3.select("path."+DISPLAYED_GENRE_IN_PIPE+"Polygon").attr('fill-opacity', 0.4)
           d3.select("path."+d.genre+"Polygon").moveToFront();
-          displayedGenreInPipe = d.genre;
+          d3.select("path."+DISPLAYED_GENRE_IN_PIPE +'Line').attr("stroke-width", 3.5)
+            .attr("opacity", ".7");
+          DISPLAYED_GENRE_IN_PIPE = d.genre;
           // manually update highlight on line chart
-          d3.select("path."+displayedGenreInPipe+'Line').attr("stroke-width", 4.5)
-            .attr("opacity", "1");
+          d3.select("path."+DISPLAYED_GENRE_IN_PIPE+'Line').attr("stroke-width", 4.5)
+            .attr("opacity", "1").moveToFront();
+          generateScatterPlot(genre_id_data, DISPLAYED_GENRE_IN_PIPE, SELECTED_ATTRIBUTE);
         });
 
     // insert svg
     document.getElementById("interactiveWebChart").appendChild(svg.node());
   }
 
+  function restoreHighlightGenre(selectedGenre){    
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE+"Polygon").attr('fill-opacity', 0.4)
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE +'Line').attr("stroke-width", 3.5)
+            .attr("opacity", ".7");
+  }
+
+  function updateHighlightGenre(selectedGenre){
+    if (!selectedGenre || selectedGenre == "") {return;}
+    
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE+"Polygon").attr('fill-opacity', 0.7).moveToFront();
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE +'Line').attr("stroke-width", 4.5)
+            .attr("opacity", "1").moveToFront();
+  }
 </script>
