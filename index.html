@@ -23,7 +23,7 @@
   </ul>
   <br>
   Explore what defines a genre by clicking around our visualization to explore trends, see comparisions, and listen to tracks in each category!
-  
+
 </div>
   
 <div class="contentContainer">
@@ -483,8 +483,8 @@
       let attribute = attributes[i];
       let angle = getRadarAngle(i);
       let lineCoordinate = angleToCoordinate(angle, 1);
-      let labelCoordinate = angleToCoordinate(angle, 1.3);
-      let labelDefCoordinate = {"x": labelCoordinate.x-40, "y": labelCoordinate.y+25};
+      let labelCoordinate = angleToCoordinate(angle, 1.2);
+      // let labelDefCoordinate = {"x": labelCoordinate.x-40, "y": labelCoordinate.y+25};
 
       // draw each axis
       svg.append("line")
@@ -547,14 +547,14 @@
             generateLineChart(sourceData,SELECTED_ATTRIBUTE);
           })
         })
-        .append("tspan")
-          .datum(attribute)
-          .attr("class", "webAxisLabel")
-          .attr("x", labelDefCoordinate.x)
-          .attr("y", labelDefCoordinate.y)
-          .style("font-weight", "normal")
-          .style("font-size", "15px")
-          .text(d => "(" + attributeDict[d] + ")");
+        // .append("tspan")
+        //   .datum(attribute)
+        //   .attr("class", "webAxisLabel")
+        //   .attr("x", labelDefCoordinate.x)
+        //   .attr("y", labelDefCoordinate.y)
+        //   .style("font-weight", "normal")
+        //   .style("font-size", "15px")
+        //   .text(d => "(" + attributeDict[d] + ")");
 
       textRect
         .attr("x", labelCoordinate.x-45)
