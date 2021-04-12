@@ -4,6 +4,7 @@
   <!-- Load d3.js -->
   <script src="https://d3js.org/d3.v6.js"></script>
   <link rel="stylesheet" type="text/css" href="css/style.css">
+  <!-- <link rel="stylesheet" type="text/css" href="css/loader.css"> -->
 </head>
 
 <div class="pageContainer" onclick="clickOnBackground">
@@ -51,7 +52,10 @@
       <div id="pipeChart" class="pipeChart">
         <!-- Container for graph -->
       </div>
-      <div id="audioPlayer" class="spotify-embed-block"></div>
+      <div class="loadingElement loader" id="loadingElement">
+        music loading....
+      </div>
+      <div id="audioPlayer" class="spotify-embed-block audioPlayer"></div>
     </div>
   </div>
 </div>
@@ -109,7 +113,6 @@
 
   // reset the highlighted fields
   function clickOnBackground(){
-    console.log("Click on background!");
     removePipeChart();
     restoreHighlightGenre();
     DISPLAYED_GENRE_IN_PIPE = "";
@@ -122,12 +125,13 @@
       if (selectedMap.get(k))
       selectedGenres.push(k)
       }
-    console.log(selectedGenres);
     return selectedGenres;
   }
 
   function removePipeChart(){
     d3.select("svg.pipe").remove();
+    d3.select("iframe").remove();
+
   }
 
   function removeLineChart(){
@@ -279,25 +283,34 @@
   function generateAudioPlayer(url) {
     console.log(url)
     d3.select("iframe").remove();
-    var ifrm = document.createElement("iframe");
+    const ifrm = document.createElement("iframe");
+        ifrm.setAttribute("id", "iframe");
         ifrm.setAttribute("src", "https://open.spotify.com/embed/track/"+url);
         ifrm.setAttribute("width", "540");
         ifrm.setAttribute("height", "300");
         ifrm.setAttribute("frameborder", "0");
         ifrm.setAttribute("allowtransparency", "true");
         ifrm.setAttribute("allow", "encrypted-media");
+    
+        const loadingelement = document.getElementById("loadingElement")
+        loadingelement.style.display ="inherit";
+
     // setting up 
     document.getElementById("audioPlayer").appendChild(ifrm);
+    
+    ifrm.addEventListener('load', function() {
+        // Hide the loading indicator
+        ifrm.setAttribute("frameborder", "0");
+        loadingelement.style.display="none"
+    });
   }
 
   function generateScatterPlot(sourceData, selectedGenre, selectedAttribute) {
     removePipeChart();
-    generateAudioPlayer(selectedGenre)
     // Get a subset of the data based on the group
     const filteredData = sourceData.filter(function(d){
       return d.genre === selectedGenre;
     })
-    console.log(selectedGenre)
 
     var margin = {top: 20, right: 10, bottom: 45, left: 50},
       width = 650, // actual width and height
