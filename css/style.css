@@ -17,6 +17,12 @@
     text-align: center;
 }
 
+ul {
+    display: table;
+    margin: 0 auto;
+    text-align: left;
+}
+
 .contentContainer{
     font-family: Bradley Hand;
     text-align: center;
@@ -33,14 +39,20 @@
     position:relative;
     width: 800px;
     height: 830px;
+    margin-top: 30px;
+    margin-left: 30px;
     font-family:Arial, Helvetica, sans-serif;
+}
+
+.webAxisLabel {
+    cursor: pointer;
 }
 
 .mainViewTitle {
     text-decoration: underline;
     font-size: 25px;
     text-align: left;
-    margin-left: 200px;
+    margin-left: 270px;
 }
 
 .sidePanelContainer{
@@ -59,7 +71,7 @@
 
 .sideTitle{
     text-align: left;
-    text-transform:capitalize;
+    /*text-transform:capitalize;*/
     font-family: Bradley Hand;
     font-size:20px;
 }
