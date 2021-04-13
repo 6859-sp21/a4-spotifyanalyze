@@ -65,10 +65,12 @@
       <div id="pipeChart" class="pipeChart">
         <!-- Container for graph -->
       </div>
-      <div class="loadingElement loader" id="loadingElement">
-        music loading....
+      <div class="audioPlayerContainer">
+        <div class="loadingElement loader" id="loadingElement">
+          music loading....
+        </div>
+        <div id="audioPlayer" class="spotify-embed-block audioPlayer"></div>
       </div>
-      <div id="audioPlayer" class="spotify-embed-block audioPlayer"></div>
     </div>
   </div>
 </div>
@@ -244,7 +246,7 @@
         .domain([0,1])
         .range([margin.left, width-margin.right]);
 
-    // a tick free y-axis
+    // a tick free x-axis
     svg.append('line')
     .style("stroke", "black")
     .style("stroke-width", 2)
@@ -266,7 +268,7 @@
 
       svg.append("path")
         .datum(density1)
-        .attr('class', selectedGenre+'Line')
+        .attr('class', selectedGenre+'Line individualTouchLine')
         .attr("fill", genreColorMap.get(selectedGenre))
         .attr("stroke", genreColorMap.get(selectedGenre))
         .attr("stroke-width", 3.5)
@@ -282,31 +284,9 @@
             DISPLAYED_GENRE_IN_PIPE = selectedGenre;
             updateHighlightGenre();
             generateScatterPlot(sourceData, selectedGenre, selectedAttribute)
+            event.stopPropagation();
           }
         });
-
-      // Draw fake lines to increase clickable area
-      svg.append("path")
-      .datum(density1)
-      .attr("fill", "none")
-      .attr('class', 'individualTouchLine')
-      .attr("stroke", "red")
-      .attr("stroke-width", 20)
-      .attr("opacity", ".0")
-      .attr("d", d3.line()
-        .x(function(d) { return x(d[0]) })
-        .y(function(d) { return y(d[1]) })
-        .curve(d3.curveMonotoneX) 
-        )
-      .on("click", function(event, d) {
-        if (DISPLAYED_GENRE_IN_PIPE != selectedGenre){
-          restoreHighlightGenre();
-          DISPLAYED_GENRE_IN_PIPE = selectedGenre;
-          updateHighlightGenre();
-          generateScatterPlot(sourceData, selectedGenre, selectedAttribute)
-          event.stopPropagation();
-        }
-      });
     }
 
     d3.select("path."+DISPLAYED_GENRE_IN_PIPE+'Line').attr("stroke-width", 4.5)
