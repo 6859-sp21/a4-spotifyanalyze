@@ -23,7 +23,7 @@
     <li>Danceability: How suitable a track is for dancing based on tempo, rhythm, beat, and regularity. </li>
   </ul>
   <br>
-  Explore what defines a genre by clicking around our visualization to explore trends, see comparisions, and listen to tracks in each category!
+  Explore what defines a genre by clicking around our visualization to explore trends, see comparisons, and listen to tracks in each category!
 
 </div>
   
@@ -354,6 +354,19 @@
       .attr('cursor', 'pointer')
       .attr('fill', genreColorMap.get(selectedGenre))  // inpute color scale 
       .attr('r','3')
+      .on("mouseover", function(event, d) {
+        d3.select(this).transition()
+          .duration(100)
+          .attr('r',6)
+          .attr('stroke','gray')
+          .attr('stroke-width','2px')
+      })
+      .on("mouseout", function(event, d) {
+        d3.select(this).transition()
+          .duration(100)
+          .attr('r',3)
+          .attr('stroke-width','0px')
+      })
       .on("click", function(event, d) {
             generateAudioPlayer(d.id);
           });
