@@ -325,7 +325,7 @@
       return d.genre === selectedGenre;
     })
 
-    var margin = {top: 20, right: 10, bottom: 45, left: 50},
+    const margin = {top: 20, right: 10, bottom: 45, left: 50},
       width = 650, // actual width and height
       height = 200;
 
@@ -530,7 +530,7 @@
           d3.select("line."+d+"AxisLine").attr("stroke-width","3");
           d3.select("rect."+d+"Rect").attr("opacity", 0.9);
 
-          d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre.csv").then(function(sourceData) {
+          d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv").then(function(sourceData) {
             removeLineChart();
             d3.select("iframe").remove();
             generateSideTitle(SELECTED_ATTRIBUTE);
@@ -601,7 +601,7 @@
       .enter()
       .append("path")
         .attr("d", d => line(d.coordinates))
-        .attr("class", d=> d.genre+"Polygon")
+        .attr("class", d=> d.genre+"Polygon genrePolygon")
         .attr("stroke-width", 3)
         .attr("stroke", d => genreColorMap.get(d.genre))
         .attr("fill", d => genreColorMap.get(d.genre))
