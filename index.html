@@ -607,7 +607,7 @@
       .enter()
       .append("path")
         .attr("d", d => line(d.coordinates))
-        .attr("class", d=> d.genre+"Polygon")
+        .attr("class", d=> d.genre+"Polygon genrePolygon")
         .attr("stroke-width", 3)
         .attr("stroke", d => genreColorMap.get(d.genre))
         .attr("fill", d => genreColorMap.get(d.genre))

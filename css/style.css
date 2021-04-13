@@ -1,11 +1,7 @@
-.loadingElement {
-    display:none;
-}
 .contentContainer{
     width: 100%;
     height: 100%
 }
-
 .pageTitle{
     text-align: center;
     font-family: Bradley Hand;
@@ -53,6 +49,10 @@ ul {
 }
 
 .webAxisLabel {
+    cursor: pointer;
+}
+
+.genrePolygon {
     cursor: pointer;
 }
 
@@ -104,6 +104,10 @@ ul {
     overflow: hidden;
     height: 80px;
     margin: auto;
+}
+
+.loadingElement {
+    display:none;
 }
 
 .tapStripContainer {
