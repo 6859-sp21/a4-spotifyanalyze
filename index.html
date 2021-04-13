@@ -396,6 +396,7 @@
   }
 
   // function for drawing single interactive web
+  // Resource citation: this visualization uses both direct snippets and adaptations of code from the following tutorial created by Danny Yang: https://yangdanny97.github.io/blog/2019/03/01/D3-Spider-Chart
   function generateRadar(data, selectedGenres, genre_id_data) {
     // svg dimensions
     const width = 800;
@@ -421,28 +422,29 @@
     let ticks = [0.2,0.4,0.6,0.8,1.0];
 
     // plot gridline circles and ticks
-    ticks.forEach(t =>
+    ticks.forEach(function(t) {
       svg.append("circle")
-      .attr("class","webCircle")
-      .attr("cx", circleCenterX)
-      .attr("cy", circleCenterY)
-      .attr("r", radialScale(t))
-      .attr("stroke-opacity", 0.5)
-    );
+        .attr("class","webCircle")
+        .attr("cx", circleCenterX)
+        .attr("cy", circleCenterY)
+        .attr("r", radialScale(t))
+        .attr("stroke-opacity", 0.5); 
 
-    ticks.forEach(t =>
       svg.append("text")
-      .attr("x", circleCenterX+5)
-      .attr("y", circleCenterY - radialScale(t)-2)
-      .text(t.toString())
-      .style("font-family","Arial")
-      .style("font-size","12px")
-    );
+        .attr("x", circleCenterX+5)
+        .attr("y", circleCenterY - radialScale(t)-2)
+        .text(t.toString())
+        .style("font-size","12px");
+    });
 
     function angleToCoordinate(angle, value){
         let x = Math.cos(angle) * radialScale(value);
         let y = Math.sin(angle) * radialScale(value);
         return {"x": circleCenterX + x, "y": circleCenterY - y};
+    }
+
+    function getRadarAngle(i) {
+      return (2*Math.PI* i / attributes.length) + (Math.PI/2);
     }
 
     function getRectOpacity(d) {
@@ -465,14 +467,11 @@
       return "normal";
     }
 
-    function getRadarAngle(i) {
-      return (2*Math.PI* i / attributes.length) + (Math.PI/2);
-    }
 
     let rectWidth = 140;
     let rectHeight = 50;
 
-    let attributeWidthMap = new Map();
+    let attributeWidthMap = new Map(); // width of each attribute label rectangle
     attributeWidthMap.set('acousticness', 200)
     attributeWidthMap.set('danceability', 160)
     attributeWidthMap.set('energy', 120)
@@ -480,7 +479,7 @@
     attributeWidthMap.set('speechiness', 140)
     attributeWidthMap.set('valence', 90)
 
-    let rectXMap = new Map();
+    let rectXMap = new Map(); // x coordinate of each attribute label rectangle
     rectXMap.set('acousticness', 250)
     rectXMap.set('danceability', 0)
     rectXMap.set('energy', 20)
@@ -563,7 +562,6 @@
           .text(d => "(" + attributeDict[d] + ")");
 
       textRect
-        // .attr("x", labelCoordinate.x-45)
         .attr("x", d => rectXMap.get(d))
         .attr("y", labelCoordinate.y-20)
         .attr("anchor", "middle")
@@ -577,41 +575,26 @@
 
     }
 
-    // plot data
+    // get line to join polygon coordinates
     let line = d3.line()
         .x(d => d.x)
         .y(d => d.y);
 
-    // get coordinate for each data point on radar
-    function getPathCoordinates(data_point){
-      let coordinates = [];
-      for (var i = 0; i < attributes.length; i++){
-        let attr_name = attributes[i];
-        let angle = (Math.PI / 2) + (2 * Math.PI * i / attributes.length);
-        coordinates.push(angleToCoordinate(angle, data_point[attr_name]));
-      }
-      coordinates.push(coordinates[0]);
+    // get coordinate for each audio feature for a genre on the radar
+    function getPathCoordinates(genre){
+      let coordinates = attributes.map((el, i) => angleToCoordinate(getRadarAngle(i), genre[el]));
+      coordinates.push(coordinates[0]); // connect line back to first coord to complete shape
       return coordinates;
     }
 
-    // add coordinates to each data item
-    for (i = 0; i < data.length; i++) {
-      let d = data[i];
-      let coordinates = getPathCoordinates(d);
-      d.coordinates = coordinates;
-
-      if (selectedGenres.indexOf(d.genre) < 0) {
-        d.selected = false;
-      } else {
-        d.selected = true;
-      }
-    }
+    // add polygon coordinates and selection state for each genre 
+    data.forEach(value => value.coordinates = getPathCoordinates(value));
 
     function filterSelectedGenres(data){
       return data.filter(d => getSelectedGenres().includes(d.genre))
     }
 
-    // draw shapes on radar for each genre 
+    // draw shapes on radar for each selected genre 
     svg.append("g").selectAll("polygons")
       .data(filterSelectedGenres(data))
       .enter()
