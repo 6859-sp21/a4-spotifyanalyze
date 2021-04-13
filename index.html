@@ -470,7 +470,23 @@
     }
 
     let rectWidth = 140;
-    let rectHeight = 55;
+    let rectHeight = 50;
+
+    let attributeWidthMap = new Map();
+    attributeWidthMap.set('acousticness', 200)
+    attributeWidthMap.set('danceability', 160)
+    attributeWidthMap.set('energy', 120)
+    attributeWidthMap.set('instrumentalness', 170)
+    attributeWidthMap.set('speechiness', 140)
+    attributeWidthMap.set('valence', 90)
+
+    let rectXMap = new Map();
+    rectXMap.set('acousticness', 250)
+    rectXMap.set('danceability', 0)
+    rectXMap.set('energy', 20)
+    rectXMap.set('instrumentalness', 265)
+    rectXMap.set('speechiness', 550)
+    rectXMap.set('valence', 575)
 
     // plot six axes (one for each attribute)
     for (var i = 0; i < attributes.length; i++) {
@@ -478,7 +494,6 @@
       let angle = getRadarAngle(i);
       let lineCoordinate = angleToCoordinate(angle, 1);
       let labelCoordinate = angleToCoordinate(angle, 1.25);
-      // let labelDefCoordinate = {"x": labelCoordinate.x-40, "y": labelCoordinate.y+25};
 
       // draw each axis
       svg.append("line")
@@ -548,11 +563,12 @@
           .text(d => "(" + attributeDict[d] + ")");
 
       textRect
-        .attr("x", labelCoordinate.x-45)
+        // .attr("x", labelCoordinate.x-45)
+        .attr("x", d => rectXMap.get(d))
         .attr("y", labelCoordinate.y-20)
         .attr("anchor", "middle")
-        .attr("width", rectWidth)
-        .attr("height", rectHeight)
+        .attr("width", d => attributeWidthMap.get(d))
+        .attr("height", d => rectHeight)
         .attr("opacity", d => getRectOpacity(d))
         .attr("rx",10)
         .on("click", function(event, d) {
