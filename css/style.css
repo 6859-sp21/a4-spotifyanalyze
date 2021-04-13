@@ -8,12 +8,12 @@
 
 .pageTitle{
     text-align: center;
-    font-family: Bradley Hand;
+    font-family: Futura, Helvetica, sans-serif;
 }
 
 .subTitle {
-    font-family: Bradley Hand;
-    font-size: 20px;
+    font-family: Futura, Helvetica, sans-serif;
+    font-size: large;
     text-align: center;
 }
 
@@ -24,7 +24,7 @@ ul {
 }
 
 .contentContainer{
-    font-family: Bradley Hand;
+    font-family: Futura, Helvetica, sans-serif;
     text-align: center;
     margin: auto;
     width: fit-content;
@@ -41,16 +41,37 @@ ul {
     height: 830px;
     margin-top: 30px;
     margin-left: 30px;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family: Futura, Helvetica, sans-serif;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+.energyLabel, .valenceLabel, .acousticnessLabel, .instrumentalnessLabel , .speechinessLabel, .danceabilityLabel {
+    cursor: pointer;
+    z-index: 1;
 }
 
 .webAxisLabel {
+    cursor: pointer;
+    font-family: Futura, Helvetica, sans-serif;
+}
+
+.textRect {
     cursor: pointer;
 }
 
 .mainViewTitle {
     text-decoration: underline;
-    font-size: 25px;
+    font-size: 22px;
+    font-family: Futura, Helvetica, sans-serif;
     text-align: left;
     margin-left: 270px;
 }
@@ -65,15 +86,14 @@ ul {
 
 .detailedViewTitle {
     text-decoration: underline;
-    font-size: 25px;
+    font-size: 22px;
     margin-bottom: 30px;
 }
 
 .sideTitle{
     text-align: left;
-    /*text-transform:capitalize;*/
-    font-family: Bradley Hand;
-    font-size:20px;
+    font-family: Futura, Helvetica, sans-serif;
+    font-size: large;
 }
 
 .individualTouchLine {
@@ -85,7 +105,7 @@ ul {
 }
 
 .pipeAxisLabel {
-    font-family: 'Times New Roman', Times, serif;
+    font-family: Futura, Helvetica, sans-serif;
     font-size: 15px;
 }
 
@@ -111,7 +131,7 @@ ul {
     border-style: solid;
     border-width: 2px;
     cursor: pointer;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family: Futura, Helvetica, sans-serif;
     background: none;
 }
 

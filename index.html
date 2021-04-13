@@ -95,20 +95,20 @@
 
   const attributes = ['acousticness','danceability', 'energy', 'instrumentalness','speechiness', 'valence'];
   const full_definitions = [
-      "<b>Acousticness</b> is a confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.",
+      "<b>Acousticness</b> is a confidence measure of whether the track is acoustic (e.g. little audio processing, few/no electronic instruments). 1.0 represents high confidence the track is acoustic.",
       "<b>Danceability</b> describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.",
-      "<b>Energy</b> is a measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.",
+      "<b>Energy</b> represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.",
       "<b>Instrumentalness</b> predicts whether a track contains no vocals. 'Ooh' and 'aah' sounds are treated as instrumental in this context.<br>Rap or spoken word tracks are clearly 'vocal'. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0.",
-      "<b>Speechiness</b> detects the presence of spoken words in a track.<br>The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.<br>Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.",
-      "<b>Valence</b> is a measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry)."];
+      "<b>Speechiness</b> detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.<br>Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.",
+      "<b>Valence</b> describes the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry)."];
 
     const attr_definitions = [
-      "Likelihood of a track being acoustic",
-      "How suitable a track is for dancing (based on tempo and rhythm)",
-      "Likelihood of a track being high-intensity or high-activity",
-      "Likelihood of track containing no vocals",
-      "Likelihood of spoken words\nexisting in track",
-      "How 'positive' or happy a track is"
+      "How unprocessed/non-electronic?",
+      "How suitable for dancing?",
+      "How intense/fast?",
+      "Lack of vocals?",
+      "Many spoken words?",
+      "How 'happy'?"
     ]
   const attributeDict = {};
   attributes.forEach((key, i) => attributeDict[key] = attr_definitions[i]);
@@ -452,18 +452,6 @@
         return {"x": circleCenterX + x, "y": circleCenterY - y};
     }
 
-    // create tooltip for feature definition
-    const tooltip = d3.select("div.webChart")
-                    .append("div")
-                    .attr("class", "tooltip")
-                    .style("opacity", 0)
-                    .style("background", "lightgray")
-                    .style("border-radius", "25px")
-                    .style("padding", "10px")
-                    .style("position","absolute")
-                    .style("bottom", "10px")
-                    .style("width", "350px")
-
     function getRectOpacity(d) {
       if (SELECTED_ATTRIBUTE === d) { return "0.9";}
       return "0";
@@ -496,7 +484,7 @@
       let attribute = attributes[i];
       let angle = getRadarAngle(i);
       let lineCoordinate = angleToCoordinate(angle, 1);
-      let labelCoordinate = angleToCoordinate(angle, 1.2);
+      let labelCoordinate = angleToCoordinate(angle, 1.25);
       // let labelDefCoordinate = {"x": labelCoordinate.x-40, "y": labelCoordinate.y+25};
 
       // draw each axis
@@ -519,16 +507,13 @@
       let webText = svg.append("text")
         .datum(attribute)
         .attr("class", "webAxisLabel")
-        .attr("class", d => d+"Label");
-
-      webText
-        .attr("x", labelCoordinate.x-40)
+        .attr("class", d => d+"Label")
+        .attr("x", labelCoordinate.x)
         .attr("y", labelCoordinate.y)
-        .style("font-family", "Futura")
         .style("font-weight", d => getLabelWeight(d))
         .attr("font-size","large")
-        // .attr("cursor","pointer")
         .attr("fill", d => getAttributeColor(d))
+        .attr("text-anchor", "middle")
         .text(d => d.charAt(0).toUpperCase() + d.slice(1))
         .on("mouseover", function(event, d) {
           if (SELECTED_ATTRIBUTE !== d) {
@@ -560,18 +545,21 @@
             generateLineChart(sourceData,SELECTED_ATTRIBUTE);
           })
         })
-        // .append("tspan")
-        //   .datum(attribute)
-        //   .attr("class", "webAxisLabel")
-        //   .attr("x", labelDefCoordinate.x)
-        //   .attr("y", labelDefCoordinate.y)
-        //   .style("font-weight", "normal")
-        //   .style("font-size", "15px")
-        //   .text(d => "(" + attributeDict[d] + ")");
+        .append("tspan")
+          .datum(attribute)
+          .attr("class", "webAxisLabel")
+          .attr("x", labelCoordinate.x)
+          .attr("y", labelCoordinate.y+20)
+          .attr("white-space", "normal")
+          .style("width", "70px")
+          .style("font-weight", "normal")
+          .style("font-size", "12px")
+          .text(d => "(" + attributeDict[d] + ")");
 
       textRect
         .attr("x", labelCoordinate.x-45)
         .attr("y", labelCoordinate.y-20)
+        .attr("anchor", "middle")
         .attr("width", function(d) {
           // console.log("width?", labelIndex, this.parentNode.childNodes);
           return rectWidth;
@@ -580,10 +568,10 @@
         .attr("fill", "lightgray")
         .attr("opacity", d => getRectOpacity(d))
         .attr("rx", 5)
-        .style("cursor", "pointer")
         .on("click", function(event, d) {
           console.log(d, d3.select("text."+d+"Label").node().getComputedTextLength());
         });
+
     }
 
     // plot data
