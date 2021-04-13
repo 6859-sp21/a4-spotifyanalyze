@@ -54,9 +54,9 @@ ul {
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
-.energyLabel, .valenceLabel, .acousticnessLabel, .instrumentalnessLabel , .speechinessLabel, .danceabilityLabel {
-    cursor: pointer;
-    z-index: 1;
+.webCircle {
+    fill: none;
+    stroke: gray;
 }
 
 .webAxisLabel {
@@ -64,16 +64,19 @@ ul {
     font-family: Futura, Helvetica, sans-serif;
 }
 
-.textRect {
+.energyLabel, .valenceLabel, .acousticnessLabel, .instrumentalnessLabel , .speechinessLabel, .danceabilityLabel {
     cursor: pointer;
+    z-index: 1;
+    font-size: large;
 }
 
 .textRect {
     cursor: pointer;
 }
 
-.webAxisLabel {
+.energyRect, .valenceRect, .acousticnessRect, .instrumentalnessRect , .speechinessRect, .danceabilityRect {
     cursor: pointer;
+    fill: lightgray;
 }
 
 .mainViewTitle {

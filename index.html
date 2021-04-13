@@ -423,10 +423,9 @@
     // plot gridline circles and ticks
     ticks.forEach(t =>
       svg.append("circle")
+      .attr("class","webCircle")
       .attr("cx", circleCenterX)
       .attr("cy", circleCenterY)
-      .attr("fill", "none")
-      .attr("stroke", "gray")
       .attr("r", radialScale(t))
       .attr("stroke-opacity", 0.5)
     );
@@ -505,7 +504,6 @@
         .attr("x", labelCoordinate.x)
         .attr("y", labelCoordinate.y)
         .style("font-weight", d => getLabelWeight(d))
-        .attr("font-size","large")
         .attr("fill", d => getAttributeColor(d))
         .attr("text-anchor", "middle")
         .text(d => d.charAt(0).toUpperCase() + d.slice(1))
@@ -545,7 +543,6 @@
           .attr("x", labelCoordinate.x)
           .attr("y", labelCoordinate.y+20)
           .attr("white-space", "normal")
-          .style("width", "70px")
           .style("font-weight", "normal")
           .style("font-size", "12px")
           .text(d => "(" + attributeDict[d] + ")");
@@ -554,14 +551,10 @@
         .attr("x", labelCoordinate.x-45)
         .attr("y", labelCoordinate.y-20)
         .attr("anchor", "middle")
-        .attr("width", function(d) {
-          // console.log("width?", labelIndex, this.parentNode.childNodes);
-          return rectWidth;
-        })
+        .attr("width", rectWidth)
         .attr("height", rectHeight)
-        .attr("fill", "lightgray")
         .attr("opacity", d => getRectOpacity(d))
-        .attr("rx", 5)
+        .attr("rx",10)
         .on("click", function(event, d) {
           console.log(d, d3.select("text."+d+"Label").node().getComputedTextLength());
         });
