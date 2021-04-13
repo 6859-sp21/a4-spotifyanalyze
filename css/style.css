@@ -48,6 +48,14 @@ ul {
     cursor: pointer;
 }
 
+.textRect {
+    cursor: pointer;
+}
+
+.webAxisLabel {
+    cursor: pointer;
+}
+
 .mainViewTitle {
     text-decoration: underline;
     font-size: 25px;

@@ -351,6 +351,7 @@
       .attr('transform', d => `translate(${xScale(d[selectedAttribute])}, ${yScale(Math.random()*0.95+0.05)})`) // leave a bit space between plot and axis
       .attr('d', d => symbol()) // output of the d3.symbol is wired up to the "d
       .attr('fill-opacity','0.7')
+      .attr('cursor', 'pointer')
       .attr('fill', genreColorMap.get(selectedGenre))  // inpute color scale 
       .attr('r','3')
       .on("click", function(event, d) {
