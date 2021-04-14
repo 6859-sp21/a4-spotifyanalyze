@@ -296,16 +296,18 @@
           }
         })
         .on("mouseover", function(d) {
-          if (DISPLAYED_GENRE_IN_PIPE !== d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== selectedGenre) {
             d3.select("path."+selectedGenre+"Line").transition()
               .duration(100)
               .attr("opacity", 0.5);
           }
         })
         .on("mouseout", function(event, d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== selectedGenre) {
           d3.select("path."+selectedGenre+"Line").transition()
           .duration(100)
           .attr("opacity", 0.4);
+          }
         });
     }
 
@@ -634,16 +636,18 @@
           event.stopPropagation();
         })
         .on("mouseover", function(event, d) {
-          if (SELECTED_ATTRIBUTE !== d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== d.genre) {
             d3.select("path."+d.genre+"Polygon").transition()
               .duration(50)
               .attr("fill-opacity", 0.55);
           }
         })
         .on("mouseout", function(event, d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== d.genre) {
            d3.select("path."+d.genre+"Polygon").transition()
               .duration(50)
               .attr("fill-opacity", 0.4);
+          }
         });
 
     // insert svg
