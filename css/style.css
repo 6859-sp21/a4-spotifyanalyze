@@ -93,6 +93,7 @@ ul {
     margin-left: 50px;
     justify-content: top;
     height: 100%;
+    max-width: 655px;
 }
 
 .detailedViewTitle {

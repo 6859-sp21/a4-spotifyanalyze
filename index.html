@@ -184,10 +184,8 @@
       tab.addEventListener("click",function(){
         if (getSelectedGenres().length === 0) {
           d3.select("iframe").remove();
-          return;
-        }
-        if (DISPLAYED_GENRE_IN_PIPE != getSelectedGenres()[0]){
-          d3.select("iframe").remove();
+          removePipeChart();
+          DISPLAYED_GENRE_IN_PIPE = ""
         }
         generateLineChart(genre_id_data, SELECTED_ATTRIBUTE)
       });
@@ -249,11 +247,21 @@
     // a tick free x-axis
     svg.append('line')
     .style("stroke", "black")
-    .style("stroke-width", 2)
+    .style("stroke-width", 1)
     .attr("x1", margin.left)
     .attr("y1", height-margin.bottom+10)
     .attr("x2", width-margin.right)
     .attr("y2", height-margin.bottom+10); 
+  
+    // a tick free y-axis // doesn't look good?
+    // svg.append('line')
+    // .style("stroke", "black")
+    // .style("stroke-width", 2)
+    // .attr("x1", margin.left)
+    // .attr("y1", height-margin.bottom+10)
+    // .attr("x2", margin.left)
+    // .attr("y2", margin.top+20); 
+
 
     var y = d3.scaleLinear()
               .range([height-margin.bottom, margin.top])
@@ -375,7 +383,7 @@
     svg.append('g').append("text")
     .text("100 " + selectedGenre +" songs")
     .attr('x', 10)
-    .attr('y', 10)
+    .attr('y', 13)
     .attr('fill', genreColorMap.get(selectedGenre))
 
     //6. Drawing our x-axis
@@ -612,6 +620,18 @@
           updateHighlightGenre();
           generateScatterPlot(genre_id_data, DISPLAYED_GENRE_IN_PIPE, SELECTED_ATTRIBUTE);
           event.stopPropagation();
+        })
+        .on("mouseover", function(event, d) {
+          if (SELECTED_ATTRIBUTE !== d) {
+            d3.select("path."+d.genre+"Polygon").transition()
+              .duration(50)
+              .attr("fill-opacity", 0.55);
+          }
+        })
+        .on("mouseout", function(event, d) {
+           d3.select("path."+d.genre+"Polygon").transition()
+              .duration(50)
+              .attr("fill-opacity", 0.4);
         });
 
     // insert svg
