@@ -637,7 +637,7 @@
           if (SELECTED_ATTRIBUTE !== d) {
             d3.select("path."+d.genre+"Polygon").transition()
               .duration(50)
-              .attr("opacity", 0.55);
+              .attr("fill-opacity", 0.55);
           }
         })
         .on("mouseout", function(event, d) {
