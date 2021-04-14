@@ -294,6 +294,18 @@
             generateScatterPlot(sourceData, selectedGenre, selectedAttribute)
             event.stopPropagation();
           }
+        })
+        .on("mouseover", function(d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== d) {
+            d3.select("path."+selectedGenre+"Line").transition()
+              .duration(100)
+              .attr("opacity", 0.5);
+          }
+        })
+        .on("mouseout", function(event, d) {
+          d3.select("path."+selectedGenre+"Line").transition()
+          .duration(100)
+          .attr("opacity", 0.4);
         });
     }
 
@@ -532,13 +544,13 @@
         .on("mouseover", function(event, d) {
           if (SELECTED_ATTRIBUTE !== d) {
             d3.select("rect."+d+"Rect").transition()
-              .duration(200)
+              .duration(100)
               .attr("opacity", 0.5);
           }
         })
         .on("mouseout", function(event, d) {
           d3.select("rect."+d+"Rect").transition()
-            .duration(200)
+            .duration(100)
             .attr("opacity", getRectOpacity(d));
         })
         .on("click", function(event, d) {
@@ -625,7 +637,7 @@
           if (SELECTED_ATTRIBUTE !== d) {
             d3.select("path."+d.genre+"Polygon").transition()
               .duration(50)
-              .attr("fill-opacity", 0.55);
+              .attr("opacity", 0.55);
           }
         })
         .on("mouseout", function(event, d) {
