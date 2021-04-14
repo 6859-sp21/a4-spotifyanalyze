@@ -1,9 +1,9 @@
-## a4-spotifyanalyze
+# a4-spotifyanalyze
 
-# Introduction
+## Introduction
 Spotify is one of the biggest music streaming services used in the United States, and one of the side effects of that is that they're at the forefront of guiding what kind of music we listen to. What gets recommended to an individual user is largely impacted by what genres they like. But, with over 5,000 distinct genres on Spotify, what do genres even mean and how do they group together our favorite kinds of music? We explored what a genre really is by visualizing attributes of 100 songs from 6 different genres to look for patterns. 
 
-# Rationale and Iteration
+## Rationale and Iteration
 When we first explored the audio data for the genres we selected, we identified eleven audio attributes that we could potentially visualize and then narrowed our selection down to six features that we thought would give viewers more insight into audio differences by genre. We wanted to enable viewers to compare the selected genres using all six audio attributes in a single visualization instead of creating a separate bar chart or other graph per attribute. 
 
 The list of possible genres were put prominently on the top to signal its selection’s importance to the whole visualization.  We designed this as tabs that can be easily selected and deselected to lower the barrier of interaction, in hopes that users can easily choose the genres as well as deciding the size of visual load they prefer (many genres selected vs few selected). The tab also serves the additional function of legends. We have given extensive thought to the color scheme.  We originally thought of using colors that connote certain music genres. For example black for classical (as black is seen as a “classic” color) and brass for jazz (since jazz instruments like saxophone are brass colored). But iterations of such color schemes all suffer from the problems of not overlaying well, or colors not being easily distinguished from one another. We ultimately picked the Tableau color scheme as we perceive its colors to be the most distinct from one another as well as discernible even when overlayed. 
@@ -20,7 +20,7 @@ To give users a visual cue that they can interact with the scatterplot, we added
 
 When a point on the scatterplot is selected, it opens up the Spotify music player widget. This feature was a later addition, included to give viewers the opportunity to explore different genres and attributes auditorily. Given that this is a visualization about music, it only makes sense that the sense of hearing should be appealed to as well. This is especially useful for gaining an idea of what different genres typically sound like, and then hearing comparisons of what different levels of each attribute sound like. It can be difficult at times to explain what attributes like “danceability” mean but when you hear it, it can become clear. This part is the deepest layer of our visualization because it’s also the most fine grain level of data, and we don’t want to overwhelm viewers. However, being able to experience what is being visualized was too powerful of an opportunity to pass up. 
 
-# Division of Work and Development Process
+## Division of Work and Development Process
 We split our work based on features. For example, during the initial development of the prototype, one was responsible for the radial graph,  one was for the area graph and one was responsible for the scatter plot. As we iterated on our visualization we each took on polishing and hooking up accordingly.
 
 The part that took the most amount of time was making sure the clicking interaction works throughout the whole interaction as well as the debugging that comes with it. The nature of our visualization demands that a single click event triggers multiple updates across graphs, which leaves room for bugs and edge cases.  Thoroughly testing the visualization and fixing all the bugs took a particularly long time.
