@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+  <!-- Load d3.js -->
+  <script src="https://d3js.org/d3.v6.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <!-- <link rel="stylesheet" type="text/css" href="css/loader.css"> -->
+</head>
+
+<div class="pageContainer" onclick="clickOnBackground">
+<h1 class="pageTitle">Spotify Analyze</h1>
+<div class="subTitle">
+  With over 5,000 genres, what do genres mean and how does Spotify group together our favorite kinds of music?
+  <br>
+  <br>
+  Spotify creates genres by using machine learning to evaluate music on a scale from 0 to 1 for different attributes. Some of these include:
+  <ul>
+    <li>Acousticness: How unprocessed and non-electronic a track is.</li>
+    <li>Valence: How happy or cheerful a track is.</li>
+    <li>Speechiness: The presence of spoken words in a track.</li>
+    <li>Instrumentalness: The lack of vocals in a track.</li>
+    <li>Energy: How intense, fast, loud, and noisy a track is. </li>
+    <li>Danceability: How suitable a track is for dancing based on tempo, rhythm, beat, and regularity. </li>
+  </ul>
+  <br>
+  Explore what defines a genre by clicking around our visualization to explore trends, see comparisons, and listen to tracks in each category!
+
+</div>
+  
+<div class="contentContainer">
+  <div class="tapStripContainer">
+    <div class="selector popSelected" id="popSelector" onclick="tabClick('pop')">
+      Pop
+    </div>
+    <div class="selector classicalSelected" id="classicalSelector" onclick="tabClick('classical')">
+      Classical
+    </div>
+    <div class="selector countryUnselected" id="countrySelector" onclick="tabClick('country')">
+      Country
+    </div>
+    <div class="selector metalUnselected" id="metalSelector" onclick="tabClick('metal')">
+      Metal
+    </div>
+    <div class="selector hiphopUnselected" id="hiphopSelector" onclick="tabClick('hiphop')">
+      HipHop
+    </div>
+    <div class="selector jazzUnselected" id="jazzSelector" onclick="tabClick('jazz')">
+      Jazz
+    </div>
+  </div>
+  <div class="graphsContainer">
+    <div class="mainViewContainer">
+      <div class="mainViewTitle">Genre Audio Features</div>
+      <div class="webChart">
+        <div id="interactiveWebChart"></div>
+      </div>
+    </div>
+    <div class="sidePanelContainer">
+      <div id="detailedViewTitle" class="detailedViewTitle">
+        Frequency Distribution of Energy Values by Genre
+      </div>
+      <div id="sideTitle" class="sideTitle"></div>
+      <div id="lineChart"></div>
+
+      <div id="pipeChart" class="pipeChart">
+        <!-- Container for graph -->
+      </div>
+      <div class="audioPlayerContainer">
+        <div class="loadingElement loader" id="loadingElement">
+          music loading....
+        </div>
+        <div id="audioPlayer" class="spotify-embed-block audioPlayer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+
+  const genreColorMap = new Map(); // a map keeping track if a genre is selected 
+  genreColorMap.set('pop', 'rgb(114, 158, 206)');
+  genreColorMap.set('classical', 'rgb(103,191,92)')
+  genreColorMap.set('country', 'rgb(140, 86, 75)');    
+  genreColorMap.set('metal', 'rgb(162,162,162)')
+  genreColorMap.set('hiphop', 'rgb(214,39,40)')
+  genreColorMap.set('jazz', 'rgb(173,139,201)')      
+
+  // initializating selected map
+  const selectedMap = new Map(); // a map keeping track if a genre is selected 
+  selectedMap.set('pop', true);
+  selectedMap.set('classical', true)
+  selectedMap.set('country', false);    
+  selectedMap.set('metal', false)
+  selectedMap.set('hiphop', false)
+  selectedMap.set('jazz', false)
+
+  const attributes = ['acousticness','danceability', 'energy', 'instrumentalness','speechiness', 'valence'];
+  const full_definitions = [
+      "<b>Acousticness</b> is a confidence measure of whether the track is acoustic (e.g. little audio processing, few/no electronic instruments). 1.0 represents high confidence the track is acoustic.",
+      "<b>Danceability</b> describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.",
+      "<b>Energy</b> represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.",
+      "<b>Instrumentalness</b> predicts whether a track contains no vocals. 'Ooh' and 'aah' sounds are treated as instrumental in this context.<br>Rap or spoken word tracks are clearly 'vocal'. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0.",
+      "<b>Speechiness</b> detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.<br>Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.",
+      "<b>Valence</b> describes the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry)."];
+
+    const attr_definitions = [
+      "How unprocessed/non-electronic?",
+      "How suitable for dancing?",
+      "How intense/fast?",
+      "Lack of vocals?",
+      "Many spoken words?",
+      "How 'happy'?"
+    ]
+  const attributeDict = {};
+  attributes.forEach((key, i) => attributeDict[key] = attr_definitions[i]);
+
+  const fullDefinitionDict = {};
+  attributes.forEach((key, i) => fullDefinitionDict[key] = full_definitions[i]);
+
+  // ================================ GLOBAL VARIABLE REGION ============================
+  // The definition here is the default values.
+  let SELECTED_ATTRIBUTE = attributes[2]; // change the content
+  let DISPLAYED_GENRE_IN_PIPE = ""
+  // ========================================================================================
+
+  function tabClick(genreName) {
+    if (selectedMap.get(genreName)) { // it is already selected
+      document.getElementById(genreName+'Selector').classList.remove(genreName+'Selected')
+      document.getElementById(genreName+'Selector').classList.add(genreName+'Unselected')
+      selectedMap.set(genreName, false);
+    } else { // it is unselected
+      document.getElementById(genreName+'Selector').classList.remove(genreName+'Unselected')
+      document.getElementById(genreName+'Selector').classList.add(genreName+'Selected')
+      selectedMap.set(genreName, true);
+    }
+    getSelectedGenres();
+  }
+
+  // reset the highlighted fields
+  function clickOnBackground(){
+    removePipeChart();
+    restoreHighlightGenre();
+    DISPLAYED_GENRE_IN_PIPE = "";
+
+  }
+
+  function getSelectedGenres() {
+    selectedGenres =[]
+    for (let k of selectedMap.keys()) {
+      if (selectedMap.get(k))
+      selectedGenres.push(k)
+      }
+    return selectedGenres;
+  }
+
+  function removePipeChart(){
+    d3.select("svg.pipe").remove();
+    d3.select("iframe").remove();
+
+  }
+
+  function removeLineChart(){
+    d3.select("svg.lineChart").remove();
+    removePipeChart();
+  }
+
+  d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+
+  
+  // get the data
+  const genre_id_promise = d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv");
+  const genre_agg_promise = d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre-agg.csv");
+
+  Promise.all([genre_id_promise,genre_agg_promise]).then((values) => {
+    const genre_id_data = values[0],
+      genre_agg_data= values[1];
+    
+      for (const tab of document.getElementsByClassName("selector")){
+      tab.addEventListener("click",function(){
+        if (getSelectedGenres().length === 0) {
+          d3.select("iframe").remove();
+          removePipeChart();
+          DISPLAYED_GENRE_IN_PIPE = ""
+        }
+        generateLineChart(genre_id_data, SELECTED_ATTRIBUTE)
+      });
+    }
+    generateSideTitle(SELECTED_ATTRIBUTE);
+    generateLineChart(genre_id_data, SELECTED_ATTRIBUTE);
+
+    for (const tab of document.getElementsByClassName("selector")){
+      tab.addEventListener("click",function(){
+        d3.select("svg.interactiveRadar").remove();
+        generateRadar(genre_agg_data, selectedGenres, genre_id_data);
+      });
+    }
+    generateRadar(genre_agg_data, getSelectedGenres(), genre_id_data)
+  });
+
+  function generateSideTitle(selectedAttribute){
+    document.getElementById("detailedViewTitle").innerHTML = "Frequency Distribution of " + selectedAttribute.charAt(0).toUpperCase() + selectedAttribute.slice(1) + " Values by Genre";
+    document.getElementById("sideTitle").innerHTML = fullDefinitionDict[selectedAttribute];
+  }
+
+  function generateLineChart(sourceData, selectedAttribute){ // genres, attribites
+    function kernelDensityEstimator(kernel, X) {
+      return function(V) {
+        return X.map(function(x) {
+          return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+        });
+      };
+    }
+    function kernelEpanechnikov(k) {
+      return function(v) {
+        return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+      };
+    }
+
+    removeLineChart();
+    selectedGenres = getSelectedGenres();
+    // set the dimensions and margins of the graph
+    const margin = {top: 10, right: 10, bottom: 10, left: 50},
+        width = 650,
+        height = 400;
+
+    // append the svg object to the body of the page
+    const svg = d3.select("#lineChart")
+      .append("svg")
+      .attr("class", "lineChart")
+      .attr('width', width)
+      .attr('height', height)
+      .on('click', function(event, d) {
+        clickOnBackground();
+      })
+      .append("g")
+
+    // Scale and axis
+    const x = d3.scaleLinear()
+        .domain([0,1])
+        .range([margin.left, width-margin.right]);
+
+    // a tick free x-axis
+    svg.append('line')
+    .style("stroke", "black")
+    .style("stroke-width", 1)
+    .attr("x1", margin.left)
+    .attr("y1", height-margin.bottom+10)
+    .attr("x2", width-margin.right)
+    .attr("y2", height-margin.bottom+10); 
+  
+    // a tick free y-axis // doesn't look good?
+    // svg.append('line')
+    // .style("stroke", "black")
+    // .style("stroke-width", 2)
+    // .attr("x1", margin.left)
+    // .attr("y1", height-margin.bottom+10)
+    // .attr("x2", margin.left)
+    // .attr("y2", margin.top+20); 
+
+
+    var y = d3.scaleLinear()
+              .range([height-margin.bottom, margin.top])
+              .domain([0, 10]);
+  
+    // Compute kernel density estimation
+    var kde = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))
+    for (const selectedGenre of selectedGenres){
+      const density1 =  kde( sourceData
+        .filter(function(d){ return d.genre === selectedGenre} )
+        .map(function(d){ return d[selectedAttribute]; }) )
+
+      svg.append("path")
+        .datum(density1)
+        .attr('class', selectedGenre+'Line individualTouchLine')
+        .attr("fill", genreColorMap.get(selectedGenre))
+        .attr("stroke", genreColorMap.get(selectedGenre))
+        .attr("stroke-width", 3.5)
+        .attr("opacity", "0.4")
+        .attr("d", d3.area()
+          .curve(d3.curveBasis)
+          .x(function(d) { return x(d[0]) })
+          .y1(function(d) { return y(d[1]) })
+          .y0(y(0)))
+        .on("click", function(d) {
+          if (DISPLAYED_GENRE_IN_PIPE != selectedGenre){
+            restoreHighlightGenre();
+            DISPLAYED_GENRE_IN_PIPE = selectedGenre;
+            updateHighlightGenre();
+            generateScatterPlot(sourceData, selectedGenre, selectedAttribute)
+            event.stopPropagation();
+          }
+        })
+        .on("mouseover", function(d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== selectedGenre) {
+            d3.select("path."+selectedGenre+"Line").transition()
+              .duration(100)
+              .attr("opacity", 0.5);
+          }
+        })
+        .on("mouseout", function(event, d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== selectedGenre) {
+          d3.select("path."+selectedGenre+"Line").transition()
+          .duration(100)
+          .attr("opacity", 0.4);
+          }
+        });
+    }
+
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE+'Line').attr("stroke-width", 4.5)
+              .attr("opacity", "1");
+  }
+
+  function generateAudioPlayer(url) {
+    console.log(url)
+    d3.select("iframe").remove();
+    const ifrm = document.createElement("iframe");
+        ifrm.setAttribute("id", "iframe");
+        ifrm.setAttribute("src", "https://open.spotify.com/embed/track/"+url);
+        ifrm.setAttribute("width", "540");
+        ifrm.setAttribute("height", "300");
+        ifrm.setAttribute("frameborder", "0");
+        ifrm.setAttribute("allowtransparency", "true");
+        ifrm.setAttribute("allow", "encrypted-media");
+    
+        const loadingelement = document.getElementById("loadingElement")
+        loadingelement.style.display ="inherit";
+
+    // setting up 
+    document.getElementById("audioPlayer").appendChild(ifrm);
+    
+    ifrm.addEventListener('load', function() {
+        // Hide the loading indicator
+        ifrm.setAttribute("frameborder", "0");
+        loadingelement.style.display="none"
+    });
+  }
+
+  function generateScatterPlot(sourceData, selectedGenre, selectedAttribute) {
+    removePipeChart();
+    // Get a subset of the data based on the group
+    const filteredData = sourceData.filter(function(d){
+      return d.genre === selectedGenre;
+    })
+
+    const margin = {top: 20, right: 10, bottom: 45, left: 50},
+      width = 650, // actual width and height
+      height = 200;
+
+    const svg = d3.create('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('class', "pipe");
+
+    // scales setup
+    const xScale = d3.scaleLinear()
+    .domain([0, 1]) // questionable setup ?? 
+    .range([margin.left, width-margin.right]);
+    const yScale = d3.scaleLinear()
+    .domain([0, 1])
+    .range([height - margin.bottom, margin.top]);
+
+    // drawing SVG
+    const symbol = d3.symbol();
+    svg.append('g')
+      .selectAll('circle') // d3-shape functions (like d3.symbol) generate attributes for SVG <path> elements
+      .data(filteredData)
+      .join('circle')
+      .attr('transform', d => `translate(${xScale(d[selectedAttribute])}, ${yScale(Math.random()*0.95+0.05)})`) // leave a bit space between plot and axis
+      .attr('d', d => symbol()) // output of the d3.symbol is wired up to the "d
+      .attr('fill-opacity','0.7')
+      .attr('cursor', 'pointer')
+      .attr('fill', genreColorMap.get(selectedGenre))  // inpute color scale 
+      .attr('r','3')
+      .on("mouseover", function(event, d) {
+        d3.select(this).transition()
+          .duration(100)
+          .attr('r',6)
+          .attr('stroke','gray')
+          .attr('stroke-width','2px')
+      })
+      .on("mouseout", function(event, d) {
+        d3.select(this).transition()
+          .duration(100)
+          .attr('r',3)
+          .attr('stroke-width','0px')
+      })
+      .on("click", function(event, d) {
+            generateAudioPlayer(d.id);
+          });
+
+    // add in label 
+    svg.append('g').append("text")
+    .text("100 " + selectedGenre +" songs")
+    .attr('x', 10)
+    .attr('y', 13)
+    .attr('fill', genreColorMap.get(selectedGenre))
+
+    //6. Drawing our x-axis
+    svg.append('g')
+      .attr('transform', `translate(0, ${height - margin.bottom})`)
+      .call(d3.axisBottom(xScale).ticks(10))
+
+    // axis label
+    svg.append('g')
+    .attr('class', 'pipeAxisLabel')
+    .append("text")
+    .text(selectedAttribute)
+    .attr('x', '50%')
+    .attr('y', height-10)
+     
+    DISPLAYED_GENRE_IN_PIPE = selectedGenre;
+    document.getElementById("pipeChart").appendChild(svg.node());
+  }
+
+  // function for drawing single interactive web
+  // Resource citation: this visualization uses both direct snippets and adaptations of code from the following tutorial created by Danny Yang: https://yangdanny97.github.io/blog/2019/03/01/D3-Spider-Chart
+  function generateRadar(data, selectedGenres, genre_id_data) {
+    // svg dimensions
+    const width = 800;
+    const height = 900;
+    const circleCenterX = 350;
+    const circleCenterY = 350;
+
+    const margin = ({top: 10, right: 10, bottom: 30, left: 10});
+    const svg = d3.create('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('class', "interactiveRadar")
+      .on('click', function(d) {
+        clickOnBackground();
+      });
+      
+
+    // make radial scale for circles
+    let radialScale = d3.scaleLinear()
+        .domain([0,1])
+        .range([0,250]);
+
+    let ticks = [0.2,0.4,0.6,0.8,1.0];
+
+    // plot gridline circles and ticks
+    ticks.forEach(function(t) {
+      svg.append("circle")
+        .attr("class","webCircle")
+        .attr("cx", circleCenterX)
+        .attr("cy", circleCenterY)
+        .attr("r", radialScale(t))
+        .attr("stroke-opacity", 0.5); 
+
+      svg.append("text")
+        .attr("x", circleCenterX+5)
+        .attr("y", circleCenterY - radialScale(t)-2)
+        .text(t.toString())
+        .style("font-size","12px");
+    });
+
+    function angleToCoordinate(angle, value){
+        let x = Math.cos(angle) * radialScale(value);
+        let y = Math.sin(angle) * radialScale(value);
+        return {"x": circleCenterX + x, "y": circleCenterY - y};
+    }
+
+    function getRadarAngle(i) {
+      return (2*Math.PI* i / attributes.length) + (Math.PI/2);
+    }
+
+    function getRectOpacity(d) {
+      if (SELECTED_ATTRIBUTE === d) { return "0.9";}
+      return "0";
+    }
+
+    function getAttributeColor(d) {
+      if (SELECTED_ATTRIBUTE === d) { return "blue";}
+      return "black";
+    }
+
+    function getAxisLineWidth(d) {
+      if (SELECTED_ATTRIBUTE === d) {return "3";}
+      return "1";
+    }
+
+    function getLabelWeight(d) {
+      if (SELECTED_ATTRIBUTE === d) {return "bold";}
+      return "normal";
+    }
+
+
+    let rectWidth = 140;
+    let rectHeight = 50;
+
+    let attributeWidthMap = new Map(); // width of each attribute label rectangle
+    attributeWidthMap.set('acousticness', 200)
+    attributeWidthMap.set('danceability', 160)
+    attributeWidthMap.set('energy', 120)
+    attributeWidthMap.set('instrumentalness', 170)
+    attributeWidthMap.set('speechiness', 140)
+    attributeWidthMap.set('valence', 90)
+
+    let rectXMap = new Map(); // x coordinate of each attribute label rectangle
+    rectXMap.set('acousticness', 250)
+    rectXMap.set('danceability', 0)
+    rectXMap.set('energy', 20)
+    rectXMap.set('instrumentalness', 265)
+    rectXMap.set('speechiness', 550)
+    rectXMap.set('valence', 575)
+
+    // plot six axes (one for each attribute)
+    for (var i = 0; i < attributes.length; i++) {
+      let attribute = attributes[i];
+      let angle = getRadarAngle(i);
+      let lineCoordinate = angleToCoordinate(angle, 1);
+      let labelCoordinate = angleToCoordinate(angle, 1.25);
+
+      // draw each axis
+      svg.append("line")
+        .datum(attribute)
+        .attr("class", "axisLine")
+        .attr("class", d => d + "AxisLine")
+        .attr("x1", circleCenterX)
+        .attr("y1", circleCenterY)
+        .attr("x2", lineCoordinate.x)
+        .attr("y2", lineCoordinate.y)
+        .attr("stroke","black")
+        .attr("stroke-width", d => getAxisLineWidth(d));
+
+      let textRect = svg.append("rect")
+        .datum(attribute)
+        .attr("class", "textRect")
+        .attr("class", d => d+"Rect");
+
+      let webText = svg.append("text")
+        .datum(attribute)
+        .attr("class", "webAxisLabel")
+        .attr("class", d => d+"Label")
+        .attr("x", labelCoordinate.x)
+        .attr("y", labelCoordinate.y)
+        .style("font-weight", d => getLabelWeight(d))
+        .attr("fill", d => getAttributeColor(d))
+        .attr("text-anchor", "middle")
+        .text(d => d.charAt(0).toUpperCase() + d.slice(1))
+        .on("mouseover", function(event, d) {
+          if (SELECTED_ATTRIBUTE !== d) {
+            d3.select("rect."+d+"Rect").transition()
+              .duration(100)
+              .attr("opacity", 0.5);
+          }
+        })
+        .on("mouseout", function(event, d) {
+          d3.select("rect."+d+"Rect").transition()
+            .duration(100)
+            .attr("opacity", getRectOpacity(d));
+        })
+        .on("click", function(event, d) {
+          SELECTED_ATTRIBUTE = d;
+          for (const feature of attributes) {
+            d3.select("text."+feature+"Label").attr("fill","black").style("font-weight","normal");
+            d3.select("line."+feature+"AxisLine").attr("stroke-width","1");
+            d3.select("rect."+feature+"Rect").attr("opacity", 0);
+          }
+          d3.select("text."+d+"Label").attr("fill","blue").style("font-weight","bold");
+          d3.select("line."+d+"AxisLine").attr("stroke-width","3");
+          d3.select("rect."+d+"Rect").attr("opacity", 0.9);
+
+          d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-spotifyanalyze/main/data/genre_id.csv").then(function(sourceData) {
+            removeLineChart();
+            d3.select("iframe").remove();
+            generateSideTitle(SELECTED_ATTRIBUTE);
+            generateLineChart(sourceData,SELECTED_ATTRIBUTE);
+          })
+        })
+        .append("tspan")
+          .datum(attribute)
+          .attr("class", "webAxisLabel")
+          .attr("x", labelCoordinate.x)
+          .attr("y", labelCoordinate.y+20)
+          .attr("white-space", "normal")
+          .style("font-weight", "normal")
+          .style("font-size", "12px")
+          .text(d => "(" + attributeDict[d] + ")");
+
+      textRect
+        .attr("x", d => rectXMap.get(d))
+        .attr("y", labelCoordinate.y-20)
+        .attr("anchor", "middle")
+        .attr("width", d => attributeWidthMap.get(d))
+        .attr("height", d => rectHeight)
+        .attr("opacity", d => getRectOpacity(d))
+        .attr("rx",10)
+        .on("click", function(event, d) {
+          console.log(d, d3.select("text."+d+"Label").node().getComputedTextLength());
+        });
+
+    }
+
+    // get line to join polygon coordinates
+    let line = d3.line()
+        .x(d => d.x)
+        .y(d => d.y);
+
+    // get coordinate for each audio feature for a genre on the radar
+    function getPathCoordinates(genre){
+      let coordinates = attributes.map((el, i) => angleToCoordinate(getRadarAngle(i), genre[el]));
+      coordinates.push(coordinates[0]); // connect line back to first coord to complete shape
+      return coordinates;
+    }
+
+    // add polygon coordinates and selection state for each genre 
+    data.forEach(value => value.coordinates = getPathCoordinates(value));
+
+    function filterSelectedGenres(data){
+      return data.filter(d => getSelectedGenres().includes(d.genre))
+    }
+
+    // draw shapes on radar for each selected genre 
+    svg.append("g").selectAll("polygons")
+      .data(filterSelectedGenres(data))
+      .enter()
+      .append("path")
+        .attr("d", d => line(d.coordinates))
+        .attr("class", d=> d.genre+"Polygon genrePolygon")
+        .attr("stroke-width", 3)
+        .attr("stroke", d => genreColorMap.get(d.genre))
+        .attr("fill", d => genreColorMap.get(d.genre))
+        .attr("stroke-opacity", 1)
+        .attr("fill-opacity", 0.4)
+        .on("click", function(event,d) {
+          restoreHighlightGenre();
+          DISPLAYED_GENRE_IN_PIPE = d.genre;
+          updateHighlightGenre();
+          generateScatterPlot(genre_id_data, DISPLAYED_GENRE_IN_PIPE, SELECTED_ATTRIBUTE);
+          event.stopPropagation();
+        })
+        .on("mouseover", function(event, d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== d.genre) {
+            d3.select("path."+d.genre+"Polygon").transition()
+              .duration(50)
+              .attr("fill-opacity", 0.55);
+          }
+        })
+        .on("mouseout", function(event, d) {
+          if (DISPLAYED_GENRE_IN_PIPE !== d.genre) {
+           d3.select("path."+d.genre+"Polygon").transition()
+              .duration(50)
+              .attr("fill-opacity", 0.4);
+          }
+        });
+
+    // insert svg
+    document.getElementById("interactiveWebChart").appendChild(svg.node());
+  }
+
+  function restoreHighlightGenre(){    
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE+"Polygon").attr('fill-opacity', 0.4)
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE +'Line').attr("stroke-width", 3.5)
+            .attr("opacity", "0.4");
+  }
+
+  function updateHighlightGenre(){
+    if (!DISPLAYED_GENRE_IN_PIPE || DISPLAYED_GENRE_IN_PIPE == "") {return;}
+    
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE+"Polygon").attr('fill-opacity', 0.7).moveToFront();
+    d3.select("path."+DISPLAYED_GENRE_IN_PIPE +'Line').attr("stroke-width", 4.5)
+            .attr("opacity", "0.65").moveToFront();
+  }
+</script>

@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+    <h1 class="pageTitle">Spotify Analyze</h1>
+
+    <div class="tapStripContainer">
+      <div class="selector popSelected" id="popSelector" onclick="tabClick('pop')">
+        Pop
+      </div>
+      <div class="selector classicalSelected" id="classicalSelector" onclick="tabClick('classical')">
+        Classical
+      </div>
+      <div class="selector countryUnselected" id="countrySelector" onclick="tabClick('country')">
+        Country
+      </div>
+      <div class="selector metalUnselected" id="metalSelector" onclick="tabClick('metal')">
+        Metal
+      </div>
+      <div class="selector hiphopUnselected" id="hiphopSelector" onclick="tabClick('hiphop')">
+        HipHop
+      </div>
+      <div class="selector jazzUnselected" id="jazzSelector" onclick="tabClick('jazz')">
+        Jazz
+      </div>
+    </div>
+    <div id="chart" class="pageContainer">
+      <!-- Container for graph -->
+    </div>
+
+    <script>
+
+      // initializating map
+      const selectedMap = new Map(); // a map keeping track if a genre is selected 
+      selectedMap.set('pop', true);
+      selectedMap.set('classical', true)
+      selectedMap.set('country', false);    
+      selectedMap.set('metal', false)
+      selectedMap.set('hiphop', false)
+      selectedMap.set('jazz', false)      
+      
+      // GLOBAL variable? 
+      function tabClick(genreName) {
+        if (selectedMap.get(genreName)) { // it is already selected
+          document.getElementById(genreName+'Selector').classList.remove(genreName+'Selected')
+          document.getElementById(genreName+'Selector').classList.add(genreName+'Unselected')
+          selectedMap.set(genreName, false);
+        } else { // it is unselected
+          document.getElementById(genreName+'Selector').classList.remove(genreName+'Unselected')
+          document.getElementById(genreName+'Selector').classList.add(genreName+'Selected')
+          selectedMap.set(genreName, true);
+
+        }
+      }
+
+      function getSelectedGenres() {
+        const result = [];
+        for (let k of selectedMap.keys()) {
+          if (selectedMap.get(k))
+           result.push(k)
+          }
+        console.log(result);
+        return result;
+      }
+
+      // Should always be present to let svg give back our visualization
+      document.getElementById("chart").appendChild(svg.node());
+    </script>
+  </body>
+</html>
